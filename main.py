@@ -14,7 +14,7 @@ async def ipischeck():
   global ipis
   while True:
     for i in ipis:
-      if ipis[i] > 499:
+      if ipis[i] > 14999:
         bansipis.append(i)
     await asyncio.sleep(600)
 rpts = 0
