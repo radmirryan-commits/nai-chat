@@ -2554,7 +2554,7 @@ async def limits():
     return f'Chat-not-pro {dayreq}, generation-photo {dayreqgen}, pro mode {proreq}', 200
 @app.route('/health')
 async def kuhu():
-    x_forwarded_for = request.headers.get('X-Forwarded-For', '')
+    x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
     if str(client) not in ipis:
         ipis[str(client)] = 0
