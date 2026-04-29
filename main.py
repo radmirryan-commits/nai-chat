@@ -144,6 +144,150 @@ async def ping_server():
 
             await asyncio.sleep(interval_seconds)
 
+@app.route('/safe')
+async def hedfkbnl():
+  html = '''
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Серый фон | Белый текст</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #808080;
+            color: #FFFFFF;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .content {
+            max-width: 780px;
+            width: 100%;
+            margin: 0 auto;
+            background-color: transparent;
+            padding: 1.2rem 0;
+        }
+
+        h1, h2, h3, p, ul, ol, li, blockquote {
+            color: #FFFFFF;
+        }
+
+        h1 {
+            font-size: 3.2rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            border-left: 4px solid rgba(255, 255, 255, 0.4);
+            padding-left: 1.2rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin: 2rem 0 1rem 0;
+            letter-spacing: -0.2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            font-size: 1.1rem;
+            line-height: 1.65;
+        }
+
+        a {
+            color: #FFFFFF;
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 3px;
+            transition: opacity 0.2s ease;
+        }
+
+        a:hover {
+            opacity: 0.75;
+            text-decoration: none;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1.5rem 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        blockquote {
+            margin: 1.5rem 0;
+            padding-left: 1.5rem;
+            border-left: 3px solid rgba(255, 255, 255, 0.5);
+            font-style: normal;
+            font-weight: 400;
+            background: none;
+        }
+
+        hr {
+            margin: 2rem 0;
+            border: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Безопасность чата NAI</h1>
+        <p>Все ваши данные не передаются 3м лицам, а история диалога удаляется. Мы не просим и не будет просить ваши пароли и почты.</p>
+        
+        <h2>Запросы - откуда у нас AI без монетизации?</h2>
+        <p>Мы используем Groq free tier, а у них очень щедрые лимиты. Зачем нам все это? - Для того, что бы вы пользовались мощными нейросетями бесплатно.</p>
+        
+        <blockquote>
+            Убедиться, что запросы идут к Groq, а не к левым серверам можно на GitHub https://github.com/radmirryan-commits/nai-chat/blob/main
+        </blockquote>
+        
+        <h3>Где контакты, кто разработчик?</h3>
+        <p>Наши контакты: HF https://huggingface.co/BIGAI-models  VK https://vk.com/radmir_ryan  VK Community https://vk.com/club237599858</p>
+        
+        <h2>Какие еще есть аргументы?</h2>
+        <p>Есть еще несколько способов для подтверждения безопасности:</p>
+        
+        <ul>
+            <li>Нажмите Ctrl+U. Вы видите передачу ваших данных на наши сервера? Нет.</li>
+            <li>Мы вас просим вводить ваши пароли (кроме PRO режима)? Нет.</li>
+            <li>Мы вас просим включить микрофон или камеру? Нет.</li>
+            <li>Мы вас просим ввести данные вашей карты? Нет.</li>
+        </ul>
+        
+        <p>Мы  <a href="#">никогда</a> не будем брать плату за наши услуги.</p>
+        
+        <hr>
+    </div>
+</body>
+</html>
+'''
+  return html, 200
 @app.route('/')
 async def gbREB():
     client = request.remote_addr
@@ -719,10 +863,10 @@ async def gbREB():
     </div>
 
     <div class="chat-static-footer">
-      <span>Проект N.AI принадлежит </span>
-      <span class="footer-link">nGix AI</span>
-      <span> и подразделению </span>
-      <span class="footer-link">nGix Research</span>
+      <span>Мы не являемся мошенниками. </span>
+      <span>Больше о безопасности: https://nai-chat.onrender.com/safe</span>
+      <span> Открытый код: </span>
+      <span class="footer-link">https://github.com/radmirryan-commits/nai-chat/blob/main</span>
     </div>
   </div>
 </div>
