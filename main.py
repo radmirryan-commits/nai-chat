@@ -2180,7 +2180,7 @@ async def fhevoevn():
         accept_lang = request.headers.get('Accept-Language', '')
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         sec_fetch_mode = request.headers.get('Sec-Fetch-Mode', '')
-        x_forwarded_for = request.headers.get('X-Forwarded-For', '')
+        x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         
         # Смягчаем проверки для локальной разработки, но оставляем для продакшена
         if host and host != 'nai-chat.onrender.com' and host != '127.0.0.1:10000' and host != 'localhost:10000':
@@ -2258,7 +2258,7 @@ async def genph():
         host = request.headers.get('Host', '')
         accept_lang = request.headers.get('Accept-Language', '')
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
-        x_forwarded_for = request.headers.get('X-Forwarded-For', '')
+        x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         # Смягчаем проверки для локальной разработки
         if host and host != 'nai-chat.onrender.com' and host != '127.0.0.1:10000' and host != 'localhost:10000':
             return 'forbidden', 403
@@ -2325,7 +2325,7 @@ async def match():
         host = request.headers.get('Host', '')
         accept_lang = request.headers.get('Accept-Language', '')
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
-        x_forwarded_for = request.headers.get('X-Forwarded-For', '')
+        x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
         # Смягчаем проверки для локальной разработки
         if host and host != 'nai-chat.onrender.com':
@@ -2403,7 +2403,7 @@ async def profi():
         host = request.headers.get('Host', '')
         accept_lang = request.headers.get('Accept-Language', '')
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
-        x_forwarded_for = request.headers.get('X-Forwarded-For', '')
+        x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
         # Смягчаем проверки для локальной разработки
         if host and host != 'nai-chat.onrender.com':
@@ -2487,7 +2487,7 @@ async def profi():
             return 'Ошибка обработки вашего запроса. 105', 400
 @app.route('/reg', methods=['POST'])
 async def profujyfi():
-    x_forwarded_for = request.headers.get('X-Forwarded-For', '')
+    x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
     if str(client) not in ipis:
         ipis[str(client)] = 0
@@ -2515,7 +2515,7 @@ async def profujyfi():
 
 @app.route('/regcheck', methods=['POST'])
 async def profujyfiesth():
-    x_forwarded_for = request.headers.get('X-Forwarded-For', '')
+    x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
     if str(client) not in ipis:
         ipis[str(client)] = 0
@@ -2542,7 +2542,7 @@ async def profujyfiesth():
         return 'Ошибка обработки запроса.', 400
 @app.route('/limit')
 async def limits():
-    x_forwarded_for = request.headers.get('X-Forwarded-For', '')
+    x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
     if str(client) not in ipis:
         ipis[str(client)] = 0
