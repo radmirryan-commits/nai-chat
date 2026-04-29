@@ -10,6 +10,17 @@ import os
 ipis = {}
 bansipis = []
 
+async def getip(ip):
+  async with aiohttp.ClientSession() as s:
+    async with s.get(f'http://ip-api.com/json/{ip}') as gt:
+      if gt.status == 200:
+        data = await gt.json()
+        if data['countryCode'] == 'RU':
+          return 1
+        else:
+          return 2
+      else:
+        return 1
 async def ipischeck():
   global ipis
   while True:
@@ -2157,6 +2168,7 @@ async def gbREB():
   <div class="secondary-text">
     Попробуйте вспомнить, совершали ли Вы огромные запросы на наши сервера?<br>
     Попробуте отключить VPN, если он работает.
+    Убедитесь, что вы находитесь в России.
   </div>
 </div>
 </body>
@@ -2188,6 +2200,9 @@ async def fhevoevn():
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower() or 'aiohttp' in user_agent.lower():
             return '403', 403
         client_ip = x_forwarded_for
+        ipy = await getip(client_ip)
+        if ipy == 2:
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) not in ipis:
@@ -2267,6 +2282,9 @@ async def genph():
         if rpts > 10:
           return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
         client_ip = x_forwarded_for
+        ipy = await getip(client_ip)
+        if ipy == 2:
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) not in ipis:
@@ -2327,6 +2345,9 @@ async def match():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
+        ipy = await getip(client_ip)
+        if ipy == 2:
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         # Смягчаем проверки для локальной разработки
         if host and host != 'nai-chat.onrender.com':
             return 'forbidden', 403
@@ -2404,6 +2425,9 @@ async def profi():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
+        ipy = await getip(client_ip)
+        if ipy == 2:
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         # Смягчаем проверки для локальной разработки
         if host and host != 'nai-chat.onrender.com':
             return 'forbidden', 403
@@ -2488,6 +2512,9 @@ async def profi():
 async def profujyfi():
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
+    ipy = await getip(client)
+    if ipy == 2:
+      return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
     if str(client) not in ipis:
         ipis[str(client)] = 0
     try:
@@ -2516,6 +2543,9 @@ async def profujyfi():
 async def profujyfiesth():
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
+    ipy = await getip(client)
+    if ipy == 2:
+        return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
     if str(client) not in ipis:
         ipis[str(client)] = 0
     try:
