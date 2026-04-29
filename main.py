@@ -866,7 +866,7 @@ async def gbREB():
       <span>Мы не являемся мошенниками. </span>
       <span>Больше о безопасности: https://nai-chat.onrender.com/safe</span>
       <span> Открытый код: </span>
-      <span class="footer-link">https://github.com/radmirryan-commits/nai-chat/blob/main</span>
+      <span>https://github.com/radmirryan-commits/nai-chat/blob/main</span>
     </div>
   </div>
 </div>
