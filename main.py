@@ -25,7 +25,7 @@ async def ipischeck():
   global ipis
   while True:
     for i in ipis:
-      if ipis[i] > 399:
+      if ipis[i] > 299:
         bansipis.append(i)
     await asyncio.sleep(600)
 rpts = 0
@@ -36,7 +36,7 @@ async def rptd():
   global rpts
   while True:
     rpts = 0
-    await asyncio.sleep(12)
+    await asyncio.sleep(10)
 async def prmptgrd(text):
     words = [
 
@@ -1705,13 +1705,13 @@ async def fhevoevn():
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) not in ipis:
           ipis[str(client_ip)] = 0
-        if rpts > 10:
+        if rpts > 7:
           return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
         try:
             data = await request.get_json()
             if 'text' in data and 'api' in data and 'dialog' in data:
                 if data['api'] == 'jghvhivh65789797T6RJHB':
-                    if dayreq >= 5999:
+                    if dayreq >= 7999:
                         return 'Извините, сервер не в состоянии отвечать. Попробуйте позже.', 429
                     else:
                         one = {
@@ -1777,7 +1777,7 @@ async def genph():
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
-        if rpts > 10:
+        if rpts > 7:
           return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
         client_ip = x_forwarded_for
         ipy = await getip(client_ip)
@@ -1790,7 +1790,7 @@ async def genph():
         try:
             data = await request.get_json()
             
-            if dayreqgen >= 149:
+            if dayreqgen >= 189:
                 return 'Сервер не в состоянии отвечать. Возможно, квота не генерацию фото исчерпана.', 403
             
             if not data or 'text' not in data:
@@ -1851,7 +1851,7 @@ async def match():
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
-        if rpts > 10:
+        if rpts > 7:
           return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
         if str(client_ip) in bansipis:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -1861,7 +1861,7 @@ async def match():
             data = await request.get_json()
             if 'text' in data and 'api' in data and 'dialog' in data:
                 if data['api'] == 'jghvhivh65789797T6RJHB':
-                    if dayreq >= 5999:
+                    if dayreq >= 7999:
                         return 'Извините, сервер не в состоянии отвечать. Попробуйте позже.', 429
                     else:
                         one = {
@@ -1931,7 +1931,7 @@ async def profi():
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
-        if rpts > 10:
+        if rpts > 7:
           return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
         if str(client_ip) in bansipis:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -1944,7 +1944,7 @@ async def profi():
                 if data['user'] in users:
                     if users[data['user']]['parol'] == data['parol']:
                         if data['api'] == 'jghvhivh65789797T6RJHB':
-                            if proreq >= 1999:
+                            if proreq >= 2499:
                                 return 'Извините, сервер не в состоянии отвечать. Возможно, квота на PRO исчерпана до завтра. Попробуйте позже.', 429
                             else:
                                 model = ''
@@ -2001,8 +2001,8 @@ async def profi():
                                                     }
                                                 else:
                                                     post_text = {
-                                                      'think': pos_text,
-                                                      'mes': 'Данная модель не поддерживает рассуждение. Используйте Qwen-3 32B для этой задачи.'
+                                                      'think': 'Простите, данная модель не поддерживает рассуждение. Использйте Qwen-3 32B, которая оффициально поддерживатеся.',
+                                                      'mes': pos_text
                                                     }
                                                 return post_text, 200
                                             else:
