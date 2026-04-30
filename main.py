@@ -9,8 +9,21 @@ import os
 
 ipis = {}
 bansipis = []
-
+reqts = {}
 notam = []
+
+async def rptsts():
+  global reqts, bansipis
+  while True:
+    for i in reqts:
+      try:
+        if reqts[i] > 10:
+          bansipis.append(i)
+        else:
+          reqts[i] = 0
+      except:
+        pass
+    await asyncio.sleep(10)
 
 async def modelscheck():
   global notam
@@ -1733,6 +1746,8 @@ async def fhevoevn():
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower() or 'aiohttp' in user_agent.lower():
             return '403', 403
         client_ip = x_forwarded_for
+        if client_ip not in reqts:
+          reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -1779,7 +1794,8 @@ async def fhevoevn():
                                         dayreq += 1
                                         rpts += 1
                                         try:
-                                          ipis[str(client_ip)] += 0
+                                          ipis[str(client_ip)] += 1
+                                          reqts[str(client_ip)] += 1
                                         except:
                                           pass
                                         return pos_text, 200
@@ -1816,6 +1832,8 @@ async def genph():
         if rpts > 7:
           return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
         client_ip = x_forwarded_for
+        if client_ip not in reqts:
+          reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -1850,7 +1868,8 @@ async def genph():
                             dayreqgen += 1
                             rpts += 1
                             try:
-                              ipis[str(client_ip)] += 0
+                              ipis[str(client_ip)] += 1
+                              reqts[str(client_ip)] += 1
                             except:
                               pass
                             return image_bytes, 200, {'Content-Type': 'image/png'}
@@ -1882,6 +1901,8 @@ async def match():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
+        if client_ip not in reqts:
+          reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -1934,7 +1955,8 @@ async def match():
                                         dayreq += 1
                                         rpts += 1
                                         try:
-                                          ipis[str(client_ip)] += 0
+                                          ipis[str(client_ip)] += 1
+                                          reqts[str(client_ip)] += 1
                                         except:
                                           pass
                                         return pos_text, 200
@@ -1966,6 +1988,8 @@ async def profi():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
+        if client_ip not in reqts:
+          reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2032,7 +2056,8 @@ async def profi():
                                                 proreq += 1
                                                 rpts += 1
                                                 try:
-                                                  ipis[str(client_ip)] += 0
+                                                  ipis[str(client_ip)] += 1
+                                                  reqts[str(client_ip)] += 1
                                                 except:
                                                   pass
                                                 if model == 'qwen/qwen3-32b':
@@ -2073,6 +2098,8 @@ async def profi():
 async def profujyfi():
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
+    if client_ip not in reqts:
+      reqts[str(client_ip)] = 0
     ipy = await getip(client)
     if ipy == 2:
       return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2080,6 +2107,7 @@ async def profujyfi():
         ipis[str(client)] = 0
     try:
         ipis[str(client)] += 1
+        reqts[str(client_ip)] += 1
     except:
         pass
     if str(client) in bansipis:
@@ -2104,6 +2132,8 @@ async def profujyfi():
 async def profujyfiesth():
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
+    if client_ip not in reqts:
+      reqts[str(client_ip)] = 0
     ipy = await getip(client)
     if ipy == 2:
         return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2111,6 +2141,7 @@ async def profujyfiesth():
         ipis[str(client)] = 0
     try:
         ipis[str(client)] += 1
+        reqts[str(client_ip)] += 1
     except:
         pass
     if str(client) in bansipis:
@@ -2164,5 +2195,6 @@ if __name__ == '__main__':
         asyncio.create_task(rptd())
         asyncio.create_task(modelscheck())
         asyncio.create_task(ipischeck())
+        asyncio.create_task(rptsts())
         await app.run_task(host='0.0.0.0', port=10000)
     asyncio.run(main())
