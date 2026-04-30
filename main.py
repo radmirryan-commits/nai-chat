@@ -39,12 +39,6 @@ async def rptd():
     await asyncio.sleep(12)
 async def prmptgrd(text):
     words = [
-    # ТЕРРОРИЗМ И ВЗРЫВЧАТКА (30)
-    'бомба', 'б0мба', 'взрыв', 'взорвать', 'подорвать', 'взрывчатка', 'тротил', 'динамит',
-    'семитекс', 'самодельная бомба', 'пояс смертника', 'терракт', 'теракт', 'террорист',
-    'терроризм', 'джихад', 'исламское государство', 'игил', 'шахид', 'смертник',
-    'подрыв', 'детонатор', 'взрывное устройство', 'сдетонировать', 'взрывоопасный',
-    'мина', 'граната', 'фугас', 'боеприпас', 'снаряд',
 
     # УБИЙСТВО И ЛИШЕНИЕ ЖИЗНИ (35)
     'убить', 'убийство', 'убивать', 'убийца', 'киллер', 'наемный убийца', 'смерть',
@@ -58,9 +52,8 @@ async def prmptgrd(text):
     'избить', 'избиение', 'побои', 'изувечить', 'калечить', 'нанести увечья', 'сломать кости',
     'переломать', 'сломать ногу', 'сломать руку', 'сломать шею', 'повредить позвоночник',
     'выбить зубы', 'выколоть глаза', 'отрезать уши', 'отрезать язык', 'отрубить палец',
-    'отрубить руку', 'ампутация', 'перерезать сухожилия', 'сжечь заживо', 'ошпарить',
+    'отрубить руку', 'перерезать сухожилия', 'сжечь заживо', 'ошпарить',
     'кислотная атака', 'облить кислотой', 'снять кожу', 'пытать', 'пытка', 'пытки',
-    'электрошок', 'вырывать ногти', 'капать воском', 'связать', 'сковать наручниками',
 
     # СЕКСУАЛИЗИРОВАННОЕ НАСИЛИЕ (25)
     'изнасиловать', 'изнасилование', 'насильник', 'педофил', 'педофилия', 'растлить',
@@ -69,26 +62,6 @@ async def prmptgrd(text):
     'сексуальное рабство', 'торговля людьми', 'секс-торговля', 'инцест', 'кровосмешение',
     'вуайеризм', 'порно', 'порнография', 'детское порно',
 
-    # ПОДЖОГИ И УНИЧТОЖЕНИЕ (20)
-    'поджечь', 'поджог', 'сжечь', 'сжигать', 'сожжение', 'огнем', 'заживо сжечь',
-    'зажигательная смесь', 'коктейль молотова', 'зажигалка', 'воспламенить', 'огонь',
-    'пожар', 'поджигатель', 'пироман', 'сжечь дом', 'сжечь машину', 'сжечь имущество',
-    'уничтожить имущество', 'вандализм',
-
-    # ОРУЖИЕ В УГРОЗАХ (30)
-    'нож', 'заточка', 'пистолет', 'револьвер', 'автомат', 'винтовка', 'дробовик',
-    'обрез', 'огнестрел', 'огнестрельное оружие', 'холодное оружие', 'кастет',
-    'бита', 'арматура', 'цепь', 'бейсбольная бита', 'топор', 'бензопила',
-    'электрошокер', 'перцовый баллончик', 'газовый баллончик', 'дубинка',
-    'наладонник', 'сюрикен', 'арбалет', 'лук', 'боеприпасы', 'патроны', 'пули',
-    'обойма',
-
-    # УГРОЗЫ И ШАНТАЖ (25)
-    'угроза', 'угрожать', 'шантаж', 'шантажировать', 'вымогательство', 'вымогать',
-    'запугать', 'устрашить', 'террор', 'травля', 'буллинг', 'преследование',
-    'сталкинг', 'кибербуллинг', 'доксинг', 'угроза убийством', 'угроза расправой',
-    'расправа', 'самосуд', 'линчевание', 'расправиться', 'наказать по-своему',
-    'отомстить', 'месть', 'кровная месть',
 
     # НАСИЛИЕ НАД ДЕТЬМИ И ЖИВОТНЫМИ (20)
     'живодер', 'живодерство', 'жестокое обращение с животными', 'убить кошку',
@@ -157,13 +130,55 @@ async def ping_server():
 
 @app.route('/safe')
 async def hedfkbnl():
+  reg = request.headers.get('X-Forwarded-For').split(',')[0].strip()
+  s = await getip(str(reg))
+  if s == 2:
+    html = '''
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style global>body{font-family:Arial,Helvetica,sans-serif}.container{align-items:center;display:flex;flex-direction:column;height:100%;justify-content:center;width:100%}@keyframes enlarge-appear{0%{opacity:0;transform:scale(75%) rotate(-90deg)}to{opacity:1;transform:scale(100%) rotate(0deg)}}.logo{color:#8e8ea0;padding-bottom:1.5rem}.scale-appear{animation:enlarge-appear .4s ease-out}@media (min-width:768px){.scale-appear{height:48px;width:48px}}.data:empty{display:none}.data{border-radius:5px;color:#8e8ea0;max-width:420px;text-align:center;width:100%}.data ul{list-style:none;padding:0}.blocked-icon{color:#ef4444}.message{align-items:center;display:flex;font-size:1.5rem;gap:1rem;justify-content:center}.explanation{font-size:.9rem;line-height:1.5;max-width:420px;opacity:50%;text-align:center;width:100%}.explanation a{color:#000}@media (prefers-color-scheme:dark){body{background-color:#343541;color:#eee}.logo{color:#acacbe}.explanation a{color:#fff}}</style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo">
+      </div>
+      <div class="message">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="blocked-icon"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z"
+          />
+        </svg>
+        <p>Регион не поддерживается</p>
+      </div>
+      <span class="explanation">
+        Простите, но наш сервис доступен только в России (RU). Попробуйте сменить локацию, или выключить VPN.
+      </span>
+      <br />
+      <span class="explanation"> Мы расширяем поддержку регионов. Это связано с лимитами нашей платформы. </span>
+    </div>
+  </body>
+</html>
+'''
+  
   html = '''
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Серый фон | Белый текст</title>
+    <title>Safe Docs</title>
     <style>
         * {
             margin: 0;
@@ -308,6 +323,190 @@ async def gbREB():
         ipis[str(client)] += 1
     except:
         pass
+    reg = request.headers.get('X-Forwarded-For').split(',')[0].strip()
+    s = await getip(str(reg))
+    if s == 2:
+      html = '''
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style global>body{font-family:Arial,Helvetica,sans-serif}.container{align-items:center;display:flex;flex-direction:column;height:100%;justify-content:center;width:100%}@keyframes enlarge-appear{0%{opacity:0;transform:scale(75%) rotate(-90deg)}to{opacity:1;transform:scale(100%) rotate(0deg)}}.logo{color:#8e8ea0;padding-bottom:1.5rem}.scale-appear{animation:enlarge-appear .4s ease-out}@media (min-width:768px){.scale-appear{height:48px;width:48px}}.data:empty{display:none}.data{border-radius:5px;color:#8e8ea0;max-width:420px;text-align:center;width:100%}.data ul{list-style:none;padding:0}.blocked-icon{color:#ef4444}.message{align-items:center;display:flex;font-size:1.5rem;gap:1rem;justify-content:center}.explanation{font-size:.9rem;line-height:1.5;max-width:420px;opacity:50%;text-align:center;width:100%}.explanation a{color:#000}@media (prefers-color-scheme:dark){body{background-color:#343541;color:#eee}.logo{color:#acacbe}.explanation a{color:#fff}}</style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo">
+      </div>
+      <div class="message">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="blocked-icon"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z"
+          />
+        </svg>
+        <p>Регион не поддерживается</p>
+      </div>
+      <span class="explanation">
+        Простите, но наш сервис доступен только в России (RU). Попробуйте сменить локацию, или выключить VPN.
+      </span>
+      <br />
+      <span class="explanation"> Мы расширяем поддержку регионов. В сокром времени, NAI будет доступен у вас. </span>
+    </div>
+  </body>
+</html>
+'''
+  
+    html = '''
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safe Docs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #808080;
+            color: #FFFFFF;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .content {
+            max-width: 780px;
+            width: 100%;
+            margin: 0 auto;
+            background-color: transparent;
+            padding: 1.2rem 0;
+        }
+
+        h1, h2, h3, p, ul, ol, li, blockquote {
+            color: #FFFFFF;
+        }
+
+        h1 {
+            font-size: 3.2rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            border-left: 4px solid rgba(255, 255, 255, 0.4);
+            padding-left: 1.2rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin: 2rem 0 1rem 0;
+            letter-spacing: -0.2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            font-size: 1.1rem;
+            line-height: 1.65;
+        }
+
+        a {
+            color: #FFFFFF;
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 3px;
+            transition: opacity 0.2s ease;
+        }
+
+        a:hover {
+            opacity: 0.75;
+            text-decoration: none;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1.5rem 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        blockquote {
+            margin: 1.5rem 0;
+            padding-left: 1.5rem;
+            border-left: 3px solid rgba(255, 255, 255, 0.5);
+            font-style: normal;
+            font-weight: 400;
+            background: none;
+        }
+
+        hr {
+            margin: 2rem 0;
+            border: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Безопасность чата NAI</h1>
+        <p>Все ваши данные не передаются 3м лицам, а история диалога удаляется. Мы не просим и не будет просить ваши пароли и почты.</p>
+        
+        <h2>Запросы - откуда у нас AI без монетизации?</h2>
+        <p>Мы используем Groq free tier, а у них очень щедрые лимиты. Зачем нам все это? - Для того, что бы вы пользовались мощными нейросетями бесплатно.</p>
+        
+        <blockquote>
+            Убедиться, что запросы идут к Groq, а не к левым серверам можно на GitHub https://github.com/radmirryan-commits/nai-chat/blob/main
+        </blockquote>
+        
+        <h3>Где контакты, кто разработчик?</h3>
+        <p>Наши контакты: HF https://huggingface.co/BIGAI-models  VK https://vk.com/radmir_ryan  VK Community https://vk.com/club237599858</p>
+        
+        <h2>Какие еще есть аргументы?</h2>
+        <p>Есть еще несколько способов для подтверждения безопасности:</p>
+        
+        <ul>
+            <li>Нажмите Ctrl+U. Вы видите передачу ваших данных на наши сервера? Нет.</li>
+            <li>Мы вас просим вводить ваши пароли (кроме PRO режима)? Нет.</li>
+            <li>Мы вас просим включить микрофон или камеру? Нет.</li>
+            <li>Мы вас просим ввести данные вашей карты? Нет.</li>
+        </ul>
+        
+        <p>Мы  <a href="#">никогда</a> не будем брать плату за наши услуги.</p>
+        
+        <hr>
+    </div>
+</body>
+</html>
+'''
+    return html, 200
     html = '''
 <!DOCTYPE html>
 <html lang="ru" translate="no">
@@ -864,6 +1063,7 @@ async def gbREB():
             <div class="model-item" data-model="ChatGPT-20B">ChatGPT-20B</div>
             <div class="model-item" data-model="ChatGPT-120B">ChatGPT-120B</div>
             <div class="model-item" data-model="LLaMA 3.3 70b">LLaMA 3.3 70b</div>
+            div class="model-item" data-model="Z.AI GLM 4.7">Z.AI GLM 4.7</div>
           </div>
         </div>
         <div class="header-right"></div>
@@ -899,7 +1099,8 @@ async def gbREB():
             </div>
             <div style="color: #9CA3AF; font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.5; background: rgba(255, 255, 255, 0.03); padding: 0.75rem 1rem; border-radius: 16px; display: inline-block; backdrop-filter: blur(2px);">
               Попробуйте вспомнить, совершали ли Вы огромные запросы на наши сервера?<br>
-              Попробуте отключить VPN, если он работает.
+              Попробуте отключить VPN, если он работает.<br>
+              Убедитесь, что ваша страна - Россия (RU)
             </div>
           </div>
         </div>
@@ -1261,7 +1462,7 @@ async def gbREB():
       const typingDiv = document.createElement('div');
       typingDiv.className = 'typing-indicator';
       typingDiv.id = 'typingIndicator';
-      typingDiv.textContent = 'NAI печатает...';
+      typingDiv.textContent = 'Генерация...';
       activeMessagesArea.appendChild(typingDiv);
       scrollChatToBottom();
     }
@@ -1513,7 +1714,7 @@ async def gbREB():
               proAuth.isLoggedIn = false;
               localStorage.removeItem('ngix_pro_user');
               localStorage.removeItem('ngix_pro_pass');
-              addMessage('Произошла ошибка при входе. Возможно, сервера в режиме KeepSleep.', 'bot', true);
+              addMessage('Произошла ошибка при входе. Возможно, сервер сбросил соединение.', 'bot', true);
               throw new Error('Требуется повторный вход');
             }
             throw new Error(errText);
@@ -2167,7 +2368,7 @@ async def gbREB():
   </div>
   <div class="secondary-text">
     Попробуйте вспомнить, совершали ли Вы огромные запросы на наши сервера?<br>
-    Попробуте отключить VPN, если он работает.
+    Попробуте отключить VPN, если он работает.<br>
     Убедитесь, что вы находитесь в России.
   </div>
 </div>
@@ -2439,6 +2640,7 @@ async def profi():
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) not in ipis:
           ipis[str(client_ip)] = 0
+        url = 'https://api.groq.com/openai/v1/chat/completions'
         try:
             data = await request.get_json()
             if 'text' in data and 'api' in data and 'dialog' in data and 'user' in data and 'parol' in data and 'model' in data:
@@ -2459,28 +2661,56 @@ async def profi():
                                   model = 'openai/gpt-oss-120b'
                                 elif data['model'] == 'LLaMA 3.3 70b':
                                   model = 'llama-3.3-70b-versatile'
+                                elif data['model'] == 'Z.AI GLM 4.7':
+                                  model = 'zai-glm-4.7'
                                 else:
-                                  return 'model not found', 404
-                                two = {
-                                    'model': model,
-                                    'messages': [
-                                        {
-                                            'role': 'system',
-                                            'content': 'Отвечай качественно и кратко. Не добавляй и не выделяй текст спец символами типа * ** и так далее. История ' + str(data['dialog'])[:4000]
-                                        },
-                                        {
-                                            'role': 'user',
-                                            'content': data['text']
-                                        }
-                                    ],
-                                    'max_tokens': 599,
-                                    'temperature': 0.7
-                                }
+                                  model = 'llama-3.1-8b-instant'
+                                if model == 'zai-glm-4.7':
+                                    one = {
+                                        'Authorization': f'Bearer {os.getenv('API_CEREBRAS')}',
+                                        'Content-Type': 'application/json'
+                                    }
+                                    two = {
+                                        'model': model,
+                                        'messages': [
+                                            {
+                                                'role': 'system',
+                                                'content': 'Отвечай качественно и кратко. Не добавляй и не выделяй текст спец символами типа * ** и так далее. История ' + str(data['dialog'])[:4000]
+                                            },
+                                            {
+                                                'role': 'user',
+                                                'content': data['text']
+                                            }
+                                        ],
+                                        'max_tokens': 599,
+                                        'temperature': 0.7
+                                    }
+                                    url = 'https://api.cerebras.ai/v1/chat/completions'
+                                else:
+                                    one = {
+                                        'Authorization': f'Bearer {os.getenv('API')}',
+                                        'Content-Type': 'application/json'
+                                    }
+                                    two = {
+                                        'model': model,
+                                        'messages': [
+                                            {
+                                                'role': 'system',
+                                                'content': 'Отвечай качественно и кратко. Не добавляй и не выделяй текст спец символами типа * ** и так далее. История ' + str(data['dialog'])[:4000]
+                                            },
+                                            {
+                                                'role': 'user',
+                                                'content': data['text']
+                                            }
+                                        ],
+                                        'max_tokens': 599,
+                                        'temperature': 0.7
+                                    }
                                 get = await prmptgrd(data['text'])
                                 if get == 1:
                                     await asyncio.sleep(random.randint(1, 3))
                                     async with aiohttp.ClientSession() as sess:
-                                        async with sess.post('https://api.groq.com/openai/v1/chat/completions', headers=one, json=two) as pos:
+                                        async with sess.post(url, headers=one, json=two) as pos:
                                             if pos.status == 200:
                                                 pos_json = await pos.json()
                                                 pos_text = pos_json['choices'][0]['message']['content']
