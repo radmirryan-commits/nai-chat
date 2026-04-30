@@ -530,6 +530,31 @@ async def gbREB():
       background: rgba(255, 94, 94, 0.1);
     }
 
+    .think-block {
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      background: rgba(97, 92, 237, 0.08);
+      border-radius: 12px;
+      font-size: 12px;
+      color: #888;
+      border-left: 2px solid #D4AF37;
+      font-style: italic;
+      max-width: 100%;
+    }
+
+    .think-label {
+      font-weight: 600;
+      color: #D4AF37;
+      margin-bottom: 4px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .bot-content {
+      word-wrap: break-word;
+    }
+
     .typing-indicator {
       align-self: flex-start;
       background: var(--input-bg);
@@ -866,7 +891,7 @@ async def gbREB():
             </div>
             <div style="color: #9CA3AF; font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.5; background: rgba(255, 255, 255, 0.03); padding: 0.75rem 1rem; border-radius: 16px; display: inline-block; backdrop-filter: blur(2px);">
               Попробуйте вспомнить, совершали ли Вы огромные запросы на наши сервера?<br>
-              Попробуте отключить VPN, если он работает.<br>
+              Попробуйте отключить VPN, если он работает.<br>
               Убедитесь, что ваша страна - Россия (RU)
             </div>
           </div>
@@ -920,7 +945,7 @@ async def gbREB():
     let isGenerating = false;
     let proAuth = { username: null, password: null, isLoggedIn: false };
     let hasMessages = false;
-    let selectedProModel = 'ChatGPT-20B';
+    let selectedProModel = 'Qween-3 32B';
     
     const savedUser = localStorage.getItem('ngix_pro_user');
     const savedPass = localStorage.getItem('ngix_pro_pass');
@@ -939,7 +964,7 @@ async def gbREB():
       "Какой торт лучше купить?",
       "Как включить телевизор?",
       "Реши сложное уравнение.",
-      "Как перестать думать об плохом?",
+      "Как перестать думать о плохом?",
       "Правда, что кит больше машины?",
       "Сгенерируй фото кота."
     ];
@@ -1211,7 +1236,7 @@ async def gbREB():
       if (dropdown) dropdown.classList.remove('active');
     }
     
-    function addMessage(text, sender, isError = false) {
+    function addMessage(text, sender, isError = false, thinkText = null) {
       if (!activeMessagesArea) {
         switchToChatMode();
       }
@@ -1219,9 +1244,33 @@ async def gbREB():
       const msgDiv = document.createElement('div');
       msgDiv.className = `message-bubble message-${sender}`;
       if (isError) msgDiv.classList.add('message-error');
-      msgDiv.textContent = text;
+      
+      if (sender === 'bot' && thinkText && thinkText.trim() !== '') {
+        const thinkBlock = document.createElement('div');
+        thinkBlock.className = 'think-block';
+        thinkBlock.innerHTML = `<div class="think-label">Размышление Qwen</div><div>${escapeHtml(thinkText)}</div>`;
+        msgDiv.appendChild(thinkBlock);
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'bot-content';
+        contentDiv.textContent = text;
+        msgDiv.appendChild(contentDiv);
+      } else {
+        msgDiv.textContent = text;
+      }
+      
       activeMessagesArea.appendChild(msgDiv);
       scrollChatToBottom();
+    }
+    
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
     }
     
     function addTypingIndicator() {
@@ -1251,10 +1300,17 @@ async def gbREB():
       const bubbles = activeMessagesArea.querySelectorAll('.message-bubble');
       for (let i = 0; i < bubbles.length; i++) {
         const bubble = bubbles[i];
-        const text = bubble.textContent.trim();
+        let text = '';
         if (bubble.classList.contains('message-user')) {
+          text = bubble.textContent.trim();
           messages.push(`user: ${text}`);
         } else if (bubble.classList.contains('message-bot') && !bubble.classList.contains('message-error')) {
+          const contentDiv = bubble.querySelector('.bot-content');
+          if (contentDiv) {
+            text = contentDiv.textContent.trim();
+          } else {
+            text = bubble.textContent.trim();
+          }
           if (text && !text.includes('Режим изменён')) {
             messages.push(`bot: ${text}`);
           }
@@ -1263,7 +1319,7 @@ async def gbREB():
       if (excludeLastUser && messages.length > 0 && messages[messages.length-1].startsWith('user:')) {
         messages.pop();
       }
-      return messages.join('\\n');
+      return messages.join('\n');
     }
     
     function switchToChatMode() {
@@ -1486,8 +1542,22 @@ async def gbREB():
             }
             throw new Error(errText);
           }
-          const reply = await response.text();
-          addMessage(reply, 'bot');
+          
+          const rawText = await response.text();
+          let thinkPart = '';
+          let answerPart = rawText;
+          
+          try {
+            if (rawText.includes('</think>')) {
+              const parts = rawText.split('</think>');
+              if (parts.length >= 2) {
+                thinkPart = parts[0].replace('<think>', '').trim();
+                answerPart = parts[1].trim();
+              }
+            }
+          } catch(e) {}
+          
+          addMessage(answerPart, 'bot', false, thinkPart);
         }
         else if (currentMode === 'math') {
           response = await fetch(MATH_API_URL, {
@@ -2456,6 +2526,13 @@ async def profi():
                                                   ipis[str(client_ip)] += 0
                                                 except:
                                                   pass
+                                                pos_text = pos_text.split('</think>')
+                                                pos_t1 = pos_text[0].replace('<think>', '').strip()
+                                                pos_t2 = pos_text[1].strip()
+                                                post_text = {
+                                                  'think': pos_t1,
+                                                  'mes': pos_t2
+                                                }
                                                 return pos_text, 200
                                             else:
                                                 return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
