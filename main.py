@@ -42,7 +42,7 @@ async def modelscheck():
               notam.remove(model)
     else:
       pass
-    await asyncio.sleep(1200)
+    await asyncio.sleep(600)
 
 
 async def getip(ip):
