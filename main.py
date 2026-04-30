@@ -10,6 +10,41 @@ import os
 ipis = {}
 bansipis = []
 
+notam = []
+
+async def modelscheck():
+  global notam
+  while True:
+    if notam:
+      for i in notam:
+        one = {
+            'Authorization': f'Bearer {os.getenv('API')}',
+            'Content-Type': 'application/json'
+        }
+        two = {
+            'model': i,
+            'messages': [
+                {
+                    'role': 'system',
+                    'content': 'Ответь.'
+                },
+                {
+                    'role': 'user',
+                    'content': 'Привет.'
+                }
+            ],
+            'max_tokens': 2,
+            'temperature': 0.7
+        }
+        async with aiohttp.ClientSession() as s:
+          async with s.post('', headers=one, json=two) as pos:
+            if pos.status == 200:
+              notam.remove(model)
+    else:
+      pass
+    await asyncio.sleep(1200)
+
+
 async def getip(ip):
   async with aiohttp.ClientSession() as s:
     async with s.get(f'http://ip-api.com/json/{ip}') as gt:
@@ -1711,7 +1746,7 @@ async def fhevoevn():
             data = await request.get_json()
             if 'text' in data and 'api' in data and 'dialog' in data:
                 if data['api'] == 'jghvhivh65789797T6RJHB':
-                    if dayreq >= 7999:
+                    if dayreq >= 9999:
                         return 'Извините, сервер не в состоянии отвечать. Попробуйте позже.', 429
                     else:
                         one = {
@@ -1749,6 +1784,7 @@ async def fhevoevn():
                                           pass
                                         return pos_text, 200
                                     else:
+                                        notam.append('llama-3.1-8b-instant')
                                         return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
                         elif get == 2:
                             return 'Простите, но я не буду обрабатывать такой текст.'
@@ -1806,6 +1842,7 @@ async def genph():
             await asyncio.sleep(3)
             get = await prmptgrd(data['text'])
             if get == 1:
+              if 'llama-3.1-8b-instant' not in notam:
                 async with aiohttp.ClientSession() as sess:
                     async with sess.post('https://image-gen.uttgu-901.workers.dev/', headers=one, json=two, timeout=60) as pos1t:
                         if pos1t.status == 200:
@@ -1821,6 +1858,8 @@ async def genph():
                             error_text = await pos1t.text()
                             print(f"Photo API error: {pos1t.status} - {error_text}")
                             return 'Простите, произошла ошибка при генерации.', 400
+              else:
+                return 'Модель временно недоступна. Попробуйте повторить генерацию через минуту.', 400
             elif get == 2:
                 return 'Простите, но я не буду обрабатывать такой текст.'
             else:
@@ -1861,7 +1900,7 @@ async def match():
             data = await request.get_json()
             if 'text' in data and 'api' in data and 'dialog' in data:
                 if data['api'] == 'jghvhivh65789797T6RJHB':
-                    if dayreq >= 7999:
+                    if dayreq >= 9999:
                         return 'Извините, сервер не в состоянии отвечать. Попробуйте позже.', 429
                     else:
                         one = {
@@ -1885,6 +1924,7 @@ async def match():
                         }
                         get = await prmptgrd(data['text'])
                         if get == 1:
+                          if 'llama-3.1-8b-instant' not in notam:
                             await asyncio.sleep(random.randint(1, 7))
                             async with aiohttp.ClientSession() as sess:
                                 async with sess.post('https://api.groq.com/openai/v1/chat/completions', headers=one, json=two) as pos:
@@ -1899,7 +1939,10 @@ async def match():
                                           pass
                                         return pos_text, 200
                                     else:
+                                        notam.append('llama-3.1-8b-instant')
                                         return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
+                          else:
+                            return 'Модель временно недоступна. Попробуйте повторить генерацию через минуту.', 400
                         elif get == 2:
                             return 'Простите, но я не буду обрабатывать такой текст.'
                         else:
@@ -1944,7 +1987,7 @@ async def profi():
                 if data['user'] in users:
                     if users[data['user']]['parol'] == data['parol']:
                         if data['api'] == 'jghvhivh65789797T6RJHB':
-                            if proreq >= 1999:
+                            if proreq >= 3999:
                                 return 'Извините, сервер не в состоянии отвечать. Возможно, квота на PRO исчерпана до завтра. Попробуйте позже.', 429
                             else:
                                 model = ''
@@ -1979,6 +2022,7 @@ async def profi():
                                 }
                                 get = await prmptgrd(data['text'])
                                 if get == 1:
+                                  if model not in notam:
                                     await asyncio.sleep(random.randint(1, 3))
                                     async with aiohttp.ClientSession() as sess:
                                         async with sess.post(url, headers=one, json=two) as pos:
@@ -2006,7 +2050,10 @@ async def profi():
                                                     }
                                                 return post_text, 200
                                             else:
+                                                notam.append(model)
                                                 return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
+                                  else:
+                                    return 'Модель временно недоступна. Попробуйте повторить генерацию через минуту.', 400
                                 elif get == 2:
                                     return 'Простите, но я не буду обрабатывать такой текст.'
                                 else:
@@ -2115,6 +2162,7 @@ if __name__ == '__main__':
         asyncio.create_task(nolim())
         asyncio.create_task(ping_server())
         asyncio.create_task(rptd())
+        asyncio.create_task(modelscheck())
         asyncio.create_task(ipischeck())
         await app.run_task(host='0.0.0.0', port=10000)
     asyncio.run(main())
