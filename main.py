@@ -274,13 +274,6 @@ async def hedfkbnl():
   return html, 200
 @app.route('/')
 async def gbREB():
-    client = request.headers.get('X-Forwarded-For').split(',')[0].strip()
-    if str(client) not in ipis:
-        ipis[str(client)] = 0
-    try:
-        ipis[str(client)] += 1
-    except:
-        pass
     html = '''
 <!DOCTYPE html>
 <html lang="ru" translate="no">
@@ -837,7 +830,7 @@ async def gbREB():
             <div class="model-item" data-model="ChatGPT-20B">ChatGPT-20B</div>
             <div class="model-item" data-model="ChatGPT-120B">ChatGPT-120B</div>
             <div class="model-item" data-model="LLaMA 3.3 70b">LLaMA 3.3 70b</div>
-            <div class="model-item" data-model="Z.AI GLM 4.7">Z.AI GLM 4.7</div>
+            <div class="model-item" data-model="Qween-3 32B">Qween-3 32B</div>
           </div>
         </div>
         <div class="header-right"></div>
@@ -2149,11 +2142,6 @@ async def gbREB():
 </body>
 </html>
 '''
-    client_ip = request.remote_addr
-    if str(client_ip) in bansipis:
-        return html3, 403
-    if str(client_ip) not in ipis:
-        ipis[str(client_ip)] = 0
     if random.randint(1, 5) == 4:
         return html2
     return html, 200
@@ -2424,10 +2412,6 @@ async def profi():
                             if proreq >= 1999:
                                 return 'Извините, сервер не в состоянии отвечать. Возможно, квота на PRO исчерпана до завтра. Попробуйте позже.', 429
                             else:
-                                one = {
-                                    'Authorization': f'Bearer {os.getenv('API')}',
-                                    'Content-Type': 'application/json'
-                                }
                                 model = ''
                                 if data['model'] == 'ChatGPT-20B':
                                   model = 'openai/gpt-oss-20b'
@@ -2435,51 +2419,29 @@ async def profi():
                                   model = 'openai/gpt-oss-120b'
                                 elif data['model'] == 'LLaMA 3.3 70b':
                                   model = 'llama-3.3-70b-versatile'
-                                elif data['model'] == 'Z.AI GLM 4.7':
-                                  model = 'zai-glm-4.7'
+                                elif data['model'] == 'Qween-3 32B':
+                                  model = 'qwen/qwen3-32b'
                                 else:
                                   model = 'llama-3.1-8b-instant'
-                                if model == 'zai-glm-4.7':
-                                    one = {
-                                        'Authorization': f'Bearer {os.getenv('API_CEREBRAS')}',
-                                        'Content-Type': 'application/json'
-                                    }
-                                    two = {
-                                        'model': model,
-                                        'messages': [
-                                            {
-                                                'role': 'system',
-                                                'content': 'Отвечай качественно и кратко. Не добавляй и не выделяй текст спец символами типа * ** и так далее. История ' + str(data['dialog'])[:4000]
-                                            },
-                                            {
-                                                'role': 'user',
-                                                'content': data['text']
-                                            }
-                                        ],
-                                        'max_tokens': 599,
-                                        'temperature': 0.7
-                                    }
-                                    url = 'https://api.cerebras.ai/v1/chat/completions'
-                                else:
-                                    one = {
-                                        'Authorization': f'Bearer {os.getenv('API')}',
-                                        'Content-Type': 'application/json'
-                                    }
-                                    two = {
-                                        'model': model,
-                                        'messages': [
-                                            {
-                                                'role': 'system',
-                                                'content': 'Отвечай качественно и кратко. Не добавляй и не выделяй текст спец символами типа * ** и так далее. История ' + str(data['dialog'])[:4000]
-                                            },
-                                            {
-                                                'role': 'user',
-                                                'content': data['text']
-                                            }
-                                        ],
-                                        'max_tokens': 599,
-                                        'temperature': 0.7
-                                    }
+                                one = {
+                                    'Authorization': f'Bearer {os.getenv('API')}',
+                                    'Content-Type': 'application/json'
+                                }
+                                two = {
+                                    'model': model,
+                                    'messages': [
+                                        {
+                                            'role': 'system',
+                                            'content': 'Отвечай качественно и кратко. Не добавляй и не выделяй текст спец символами типа * ** и так далее. История ' + str(data['dialog'])[:4000]
+                                        },
+                                        {
+                                            'role': 'user',
+                                            'content': data['text']
+                                        }
+                                    ],
+                                    'max_tokens': 599,
+                                    'temperature': 0.7
+                                }
                                 get = await prmptgrd(data['text'])
                                 if get == 1:
                                     await asyncio.sleep(random.randint(1, 3))
