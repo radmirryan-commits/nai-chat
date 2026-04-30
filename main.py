@@ -17,13 +17,10 @@ async def rptsts():
   while True:
     for i in reqts:
       try:
-        if reqts[i] > 10:
-          bansipis.append(i)
-        else:
-          reqts[i] = 0
+        reqts[i] = 0
       except:
         pass
-    await asyncio.sleep(10)
+    await asyncio.sleep(20)
 
 async def modelscheck():
   global notam
@@ -50,7 +47,7 @@ async def modelscheck():
             'temperature': 0.7
         }
         async with aiohttp.ClientSession() as s:
-          async with s.post('', headers=one, json=two) as pos:
+          async with s.post('https://api.groq.com/openai/v1/chat/completions', headers=one, json=two) as pos:
             if pos.status == 200:
               notam.remove(model)
     else:
@@ -1748,6 +1745,9 @@ async def fhevoevn():
         client_ip = x_forwarded_for
         if client_ip not in reqts:
           reqts[str(client_ip)] = 0
+        if reqts[client_ip] > 7:
+          if client_ip not in bansipis:
+            bansipis.append(client_ip)
         ipy = await getip(client_ip)
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -1825,6 +1825,9 @@ async def genph():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         # Смягчаем проверки для локальной разработки
+        if reqts[client_ip] > 7:
+          if client_ip not in bansipis:
+            bansipis.append(client_ip)
         if host and host != 'nai-chat.onrender.com' and host != '127.0.0.1:10000' and host != 'localhost:10000':
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
@@ -1904,6 +1907,9 @@ async def match():
         if client_ip not in reqts:
           reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
+        if reqts[client_ip] > 7:
+          if client_ip not in bansipis:
+            bansipis.append(client_ip)
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         # Смягчаем проверки для локальной разработки
@@ -1988,6 +1994,9 @@ async def profi():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
+        if reqts[client_ip] > 7:
+          if client_ip not in bansipis:
+            bansipis.append(client_ip)
         if client_ip not in reqts:
           reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
@@ -2098,8 +2107,11 @@ async def profi():
 async def profujyfi():
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
-    if client_ip not in reqts:
-      reqts[str(client_ip)] = 0
+    if reqts[client] > 7:
+      if client not in bansipis:
+        bansipis.append(client)
+    if client not in reqts:
+      reqts[str(client)] = 0
     ipy = await getip(client)
     if ipy == 2:
       return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2132,8 +2144,11 @@ async def profujyfi():
 async def profujyfiesth():
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
-    if client_ip not in reqts:
-      reqts[str(client_ip)] = 0
+    if reqts[client] > 7:
+      if client not in bansipis:
+        bansipis.append(client)
+    if client not in reqts:
+      reqts[str(client)] = 0
     ipy = await getip(client)
     if ipy == 2:
         return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
