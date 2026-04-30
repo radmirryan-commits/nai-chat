@@ -130,48 +130,6 @@ async def ping_server():
 
 @app.route('/safe')
 async def hedfkbnl():
-  reg = request.headers.get('X-Forwarded-For').split(',')[0].strip()
-  s = await getip(str(reg))
-  if s == 2:
-    html = '''
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style global>body{font-family:Arial,Helvetica,sans-serif}.container{align-items:center;display:flex;flex-direction:column;height:100%;justify-content:center;width:100%}@keyframes enlarge-appear{0%{opacity:0;transform:scale(75%) rotate(-90deg)}to{opacity:1;transform:scale(100%) rotate(0deg)}}.logo{color:#8e8ea0;padding-bottom:1.5rem}.scale-appear{animation:enlarge-appear .4s ease-out}@media (min-width:768px){.scale-appear{height:48px;width:48px}}.data:empty{display:none}.data{border-radius:5px;color:#8e8ea0;max-width:420px;text-align:center;width:100%}.data ul{list-style:none;padding:0}.blocked-icon{color:#ef4444}.message{align-items:center;display:flex;font-size:1.5rem;gap:1rem;justify-content:center}.explanation{font-size:.9rem;line-height:1.5;max-width:420px;opacity:50%;text-align:center;width:100%}.explanation a{color:#000}@media (prefers-color-scheme:dark){body{background-color:#343541;color:#eee}.logo{color:#acacbe}.explanation a{color:#fff}}</style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="logo">
-      </div>
-      <div class="message">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="blocked-icon"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z"
-          />
-        </svg>
-        <p>Регион не поддерживается</p>
-      </div>
-      <span class="explanation">
-        Простите, но наш сервис доступен только в России (RU). Попробуйте сменить локацию, или выключить VPN.
-      </span>
-      <br />
-      <span class="explanation"> Мы расширяем поддержку регионов. Это связано с лимитами нашей платформы. </span>
-    </div>
-  </body>
-</html>
-'''
-  
   html = '''
 <!DOCTYPE html>
 <html lang="ru">
