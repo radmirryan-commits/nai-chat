@@ -1297,7 +1297,7 @@ async def gbREB():
         
         btn.addEventListener('click', () => {
           thinkDiv.classList.toggle('visible');
-          btn.textContent = thinkDiv.classList.contains('visible') ? '🤔 Скрыть рассуждение' : '💭 Рассуждение';
+          btn.textContent = thinkDiv.classList.contains('visible') ? 'Скрыть рассуждение' : 'Рассуждение';
           scrollChatToBottom();
         });
         
@@ -1992,13 +1992,18 @@ async def profi():
                                                 except:
                                                   pass
                                                 if model == 'qwen/qwen3-32b':
-                                                  pos_text = pos_text.split('</think>')
-                                                  pos_t1 = pos_text[0].replace('<think>', '').strip()
-                                                  pos_t2 = pos_text[1].strip()
-                                                  post_text = {
-                                                    'think': pos_t1,
-                                                    'mes': pos_t2
-                                                  }
+                                                    pos_text = pos_text.split('</think>')
+                                                    pos_t1 = pos_text[0].replace('<think>', '').strip()
+                                                    pos_t2 = pos_text[1].strip()
+                                                    post_text = {
+                                                      'think': pos_t1,
+                                                      'mes': pos_t2
+                                                    }
+                                                else:
+                                                    post_text = {
+                                                      'think': pos_text,
+                                                      'mes': 'Данная модель не поддерживает рассуждение. Используйте Qwen-3 32B для этой задачи.'
+                                                    }
                                                 return post_text, 200
                                             else:
                                                 return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
