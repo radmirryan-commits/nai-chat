@@ -837,7 +837,7 @@ async def gbREB():
             <div class="model-item" data-model="ChatGPT-20B">ChatGPT-20B</div>
             <div class="model-item" data-model="ChatGPT-120B">ChatGPT-120B</div>
             <div class="model-item" data-model="LLaMA 3.3 70b">LLaMA 3.3 70b</div>
-            div class="model-item" data-model="Z.AI GLM 4.7">Z.AI GLM 4.7</div>
+            <div class="model-item" data-model="Z.AI GLM 4.7">Z.AI GLM 4.7</div>
           </div>
         </div>
         <div class="header-right"></div>
