@@ -1944,7 +1944,7 @@ async def profi():
                 if data['user'] in users:
                     if users[data['user']]['parol'] == data['parol']:
                         if data['api'] == 'jghvhivh65789797T6RJHB':
-                            if proreq >= 2499:
+                            if proreq >= 1999:
                                 return 'Извините, сервер не в состоянии отвечать. Возможно, квота на PRO исчерпана до завтра. Попробуйте позже.', 429
                             else:
                                 model = ''
