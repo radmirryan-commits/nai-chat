@@ -92,7 +92,7 @@ users = {}
 app = Quart(__name__)
 
 async def nolim():
-    global dayreq, dayreqgen
+    global dayreq, dayreqgen, bansipis
     while True:
         dayreq = 0
         dayreqgen = 0
@@ -525,34 +525,41 @@ async def gbREB():
       color: var(--text-primary);
     }
 
+    /* Стили для сообщения с блоком рассуждений (Qwen) */
+    .message-bot.think-block {
+      padding: 0;
+      overflow: hidden;
+      border-left: none;
+      background: transparent;
+    }
+    .think-content {
+      background: #2c3e66;
+      color: #e0e7ff;
+      padding: 10px 16px;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      font-style: italic;
+      font-size: 13px;
+      margin-bottom: 8px;
+      border-left: 3px solid #ffd966;
+    }
+    .message-content {
+      background: var(--input-bg);
+      padding: 10px 16px;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      border-left: 2px solid #615ced;
+      color: var(--text-primary);
+    }
+    html.dark .think-content {
+      background: #1e2a4a;
+      color: #cbd5ff;
+      border-left-color: #f0b429;
+    }
+
     .message-error {
       border-left-color: #FF5E5E;
       background: rgba(255, 94, 94, 0.1);
-    }
-
-    .think-block {
-      margin-bottom: 8px;
-      padding: 8px 12px;
-      background: rgba(97, 92, 237, 0.08);
-      border-radius: 12px;
-      font-size: 12px;
-      color: #888;
-      border-left: 2px solid #D4AF37;
-      font-style: italic;
-      max-width: 100%;
-    }
-
-    .think-label {
-      font-weight: 600;
-      color: #D4AF37;
-      margin-bottom: 4px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .bot-content {
-      word-wrap: break-word;
     }
 
     .typing-indicator {
@@ -855,7 +862,7 @@ async def gbREB():
             <div class="model-item" data-model="ChatGPT-20B">ChatGPT-20B</div>
             <div class="model-item" data-model="ChatGPT-120B">ChatGPT-120B</div>
             <div class="model-item" data-model="LLaMA 3.3 70b">LLaMA 3.3 70b</div>
-            <div class="model-item" data-model="Qween-3 32B">Qween-3 32B</div>
+            <div class="model-item" data-model="Qwen-3 32B">Qwen-3 32B</div>
           </div>
         </div>
         <div class="header-right"></div>
@@ -891,7 +898,7 @@ async def gbREB():
             </div>
             <div style="color: #9CA3AF; font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.5; background: rgba(255, 255, 255, 0.03); padding: 0.75rem 1rem; border-radius: 16px; display: inline-block; backdrop-filter: blur(2px);">
               Попробуйте вспомнить, совершали ли Вы огромные запросы на наши сервера?<br>
-              Попробуйте отключить VPN, если он работает.<br>
+              Попробуте отключить VPN, если он работает.<br>
               Убедитесь, что ваша страна - Россия (RU)
             </div>
           </div>
@@ -945,7 +952,7 @@ async def gbREB():
     let isGenerating = false;
     let proAuth = { username: null, password: null, isLoggedIn: false };
     let hasMessages = false;
-    let selectedProModel = 'Qween-3 32B';
+    let selectedProModel = 'ChatGPT-20B';
     
     const savedUser = localStorage.getItem('ngix_pro_user');
     const savedPass = localStorage.getItem('ngix_pro_pass');
@@ -964,7 +971,7 @@ async def gbREB():
       "Какой торт лучше купить?",
       "Как включить телевизор?",
       "Реши сложное уравнение.",
-      "Как перестать думать о плохом?",
+      "Как перестать думать об плохом?",
       "Правда, что кит больше машины?",
       "Сгенерируй фото кота."
     ];
@@ -1236,41 +1243,35 @@ async def gbREB():
       if (dropdown) dropdown.classList.remove('active');
     }
     
-    function addMessage(text, sender, isError = false, thinkText = null) {
+    function addMessage(text, sender, isError = false, think = null) {
       if (!activeMessagesArea) {
         switchToChatMode();
       }
       
-      const msgDiv = document.createElement('div');
-      msgDiv.className = `message-bubble message-${sender}`;
-      if (isError) msgDiv.classList.add('message-error');
-      
-      if (sender === 'bot' && thinkText && thinkText.trim() !== '') {
-        const thinkBlock = document.createElement('div');
-        thinkBlock.className = 'think-block';
-        thinkBlock.innerHTML = `<div class="think-label">Размышление Qwen</div><div>${escapeHtml(thinkText)}</div>`;
-        msgDiv.appendChild(thinkBlock);
+      if (sender === 'bot' && think && think.trim() !== '') {
+        // Специальный блок для Qwen с рассуждением
+        const container = document.createElement('div');
+        container.className = 'message-bot think-block';
+        
+        const thinkDiv = document.createElement('div');
+        thinkDiv.className = 'think-content';
+        thinkDiv.textContent = '🤔 Рассуждение: ' + think;
         
         const contentDiv = document.createElement('div');
-        contentDiv.className = 'bot-content';
+        contentDiv.className = 'message-content';
         contentDiv.textContent = text;
-        msgDiv.appendChild(contentDiv);
+        
+        container.appendChild(thinkDiv);
+        container.appendChild(contentDiv);
+        activeMessagesArea.appendChild(container);
       } else {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message-bubble message-${sender}`;
+        if (isError) msgDiv.classList.add('message-error');
         msgDiv.textContent = text;
+        activeMessagesArea.appendChild(msgDiv);
       }
-      
-      activeMessagesArea.appendChild(msgDiv);
       scrollChatToBottom();
-    }
-    
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-      });
     }
     
     function addTypingIndicator() {
@@ -1297,29 +1298,31 @@ async def gbREB():
     function getDialogHistory(excludeLastUser = false) {
       if (!activeMessagesArea) return '';
       const messages = [];
-      const bubbles = activeMessagesArea.querySelectorAll('.message-bubble');
+      const bubbles = activeMessagesArea.querySelectorAll('.message-bubble, .message-bot.think-block');
       for (let i = 0; i < bubbles.length; i++) {
         const bubble = bubbles[i];
         let text = '';
-        if (bubble.classList.contains('message-user')) {
+        if (bubble.classList.contains('message-bubble')) {
           text = bubble.textContent.trim();
-          messages.push(`user: ${text}`);
-        } else if (bubble.classList.contains('message-bot') && !bubble.classList.contains('message-error')) {
-          const contentDiv = bubble.querySelector('.bot-content');
+          if (bubble.classList.contains('message-user')) {
+            messages.push(`user: ${text}`);
+          } else if (bubble.classList.contains('message-bot') && !bubble.classList.contains('message-error')) {
+            if (text && !text.includes('Режим изменён')) {
+              messages.push(`bot: ${text}`);
+            }
+          }
+        } else if (bubble.classList.contains('message-bot') && bubble.classList.contains('think-block')) {
+          const contentDiv = bubble.querySelector('.message-content');
           if (contentDiv) {
             text = contentDiv.textContent.trim();
-          } else {
-            text = bubble.textContent.trim();
-          }
-          if (text && !text.includes('Режим изменён')) {
-            messages.push(`bot: ${text}`);
+            if (text) messages.push(`bot: ${text}`);
           }
         }
       }
       if (excludeLastUser && messages.length > 0 && messages[messages.length-1].startsWith('user:')) {
         messages.pop();
       }
-      return messages.join('\n');
+      return messages.join('\\n');
     }
     
     function switchToChatMode() {
@@ -1542,22 +1545,15 @@ async def gbREB():
             }
             throw new Error(errText);
           }
-          
-          const rawText = await response.text();
-          let thinkPart = '';
-          let answerPart = rawText;
-          
-          try {
-            if (rawText.includes('</think>')) {
-              const parts = rawText.split('</think>');
-              if (parts.length >= 2) {
-                thinkPart = parts[0].replace('<think>', '').trim();
-                answerPart = parts[1].trim();
-              }
-            }
-          } catch(e) {}
-          
-          addMessage(answerPart, 'bot', false, thinkPart);
+          const reply = await response.json();
+          // Для Qwen сервер возвращает { think: "...", mes: "..." }
+          if (reply.think !== undefined && reply.mes !== undefined) {
+            addMessage(reply.mes, 'bot', false, reply.think);
+          } else if (typeof reply === 'string') {
+            addMessage(reply, 'bot');
+          } else {
+            addMessage(JSON.stringify(reply), 'bot');
+          }
         }
         else if (currentMode === 'math') {
           response = await fetch(MATH_API_URL, {
@@ -1645,575 +1641,6 @@ async def gbREB():
 </body>
 </html>
 '''
-    html2 = '''
-
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>nGix AI</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Poppins', sans-serif;
-            background: #050508;
-        }
-
-        .captcha-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a0a0f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .captcha-container {
-            background: #111115;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 36px 48px 40px 48px;
-            border: none;
-        }
-
-        .captcha-header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            padding-bottom: 22px;
-            flex-shrink: 0;
-        }
-
-        .captcha-header h2 {
-            font-size: 2rem;
-            font-weight: 450;
-            color: #f0f0f5;
-            letter-spacing: -0.3px;
-            font-family: 'Segoe UI', 'Inter', monospace;
-            text-transform: uppercase;
-            font-weight: 500;
-        }
-
-        .shield-icon {
-            font-size: 2.4rem;
-            opacity: 0.85;
-        }
-
-        .info-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #16161c;
-            padding: 12px 32px;
-            border-radius: 80px;
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-            gap: 14px;
-            flex-shrink: 0;
-            border: 0.5px solid rgba(255,255,255,0.05);
-        }
-
-        .badge {
-            font-size: 0.85rem;
-            font-weight: 500;
-            background: #202026;
-            padding: 6px 22px;
-            border-radius: 60px;
-            color: #cacad2;
-            letter-spacing: 0.4px;
-            font-family: monospace;
-        }
-
-        .task {
-            font-size: 1rem;
-            background: #1a1a21;
-            padding: 6px 28px;
-            border-radius: 60px;
-            color: #ffffffcc;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            border: 0.5px solid rgba(255,255,255,0.08);
-        }
-
-        .task span {
-            font-size: 1.4rem;
-        }
-
-        .task strong {
-            background: #2a2a33;
-            padding: 4px 18px;
-            border-radius: 40px;
-            font-family: monospace;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-            color: #fff;
-        }
-
-        .emoji-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(74px, 86px));
-            justify-content: center;
-            gap: 16px;
-            flex: 1;
-            overflow-y: auto;
-            padding: 28px 24px;
-            background: #07070b;
-            margin-bottom: 16px;
-            scrollbar-width: thin;
-            scrollbar-color: #3d3d48 #18181e;
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-
-        .emoji-grid::-webkit-scrollbar {
-            width: 7px;
-        }
-        .emoji-grid::-webkit-scrollbar-track {
-            background: #18181e;
-        }
-        .emoji-grid::-webkit-scrollbar-thumb {
-            background: #3d3d48;
-            border-radius: 4px;
-        }
-
-        .emoji-card {
-            background: #17171d;
-            border-radius: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.7rem;
-            cursor: pointer;
-            transition: all 0.18s ease;
-            aspect-ratio: 1 / 1;
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            transform: scale(1);
-        }
-
-        .emoji-card:hover {
-            background: #25252e;
-            transform: scale(1.02);
-            border-color: rgba(255, 255, 255, 0.12);
-        }
-
-        .emoji-card:active {
-            transform: scale(0.97);
-        }
-
-        .footer-note {
-            text-align: center;
-            font-size: 0.7rem;
-            color: #4f4f5c;
-            margin-top: 10px;
-            letter-spacing: 0.5px;
-            font-family: monospace;
-            flex-shrink: 0;
-            padding: 10px;
-            border-top: 0.5px solid rgba(255,255,255,0.05);
-            background: transparent;
-        }
-
-        @media (max-width: 780px) {
-            .captcha-container {
-                padding: 24px 24px 32px 24px;
-            }
-            .emoji-grid {
-                gap: 12px;
-                grid-template-columns: repeat(auto-fill, minmax(64px, 74px));
-                padding: 20px 16px;
-            }
-            .emoji-card {
-                font-size: 2.3rem;
-            }
-            .captcha-header h2 {
-                font-size: 1.4rem;
-            }
-            .task {
-                font-size: 0.8rem;
-                padding: 4px 18px;
-            }
-        }
-
-        @media (max-width: 550px) {
-            .emoji-grid {
-                gap: 10px;
-                grid-template-columns: repeat(auto-fill, minmax(58px, 66px));
-            }
-            .emoji-card {
-                font-size: 2rem;
-            }
-        }
-    </style>
-</head>
-<body>
-
-<div class="captcha-overlay" id="captchaOverlay">
-    <div class="captcha-container">
-        <div class="captcha-header">
-            <h2>NAI Капча</h2>
-        </div>
-        <div class="info-bar">
-            <div class="task" id="taskDisplay">
-                <span></span>Пожалуйста, найди <strong id="targetEmojiDisplay">🤖</strong>
-            </div>
-        </div>
-        <div class="emoji-grid" id="emojiGrid"></div>
-        <div class="footer-note">
-            Проект N.AI принадлежит nGix и подразделению nGix Research.
-        </div>
-    </div>
-</div>
-
-<script>
-    (function() {
-        const TOTAL_EMOJIS = 500;
-        
-        const possibleTargets = [
-            "🤖", "⚙️", "🖥️", "💻", "📀", "💾", "🔧", "🔩", "💡", "🎛️",
-            "📡", "🛜", "🔋", "🧠", "🦾", "🤖", "👾", "🎮", "⌨️", "🖱️",
-            "🕹️", "📟", "☢️", "⚠️", "🔒", "🔐", "⚡", "🔥"
-        ];
-        
-        const commonEmojis = [
-            "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇",
-            "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚",
-            "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🥸",
-            "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️",
-            "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡",
-            "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓",
-            "🤗", "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄",
-            "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵",
-            "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠",
-            "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽",
-            "🎃", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾",
-            "🙈", "🙉", "🙊", "💋", "💌", "💘", "💝", "💖", "💗", "💓",
-            "💞", "💕", "💟", "❣️", "💔", "❤️", "🧡", "💛", "💚", "💙",
-            "💜", "🖤", "🤍", "🤎", "💢", "💥", "💫", "💦", "💨", "🕳️",
-            "💣", "💬", "👁️", "👄", "🧠", "🫀", "🫁", "👣", "👀", "🗿",
-            "⭐", "🌟", "🌙", "☀️", "⚡", "🔥", "❄️", "💧", "🌊", "🍎",
-            "🍕", "🚀", "⌛", "⏳", "📌", "🔓", "💎", "🎯", "🥨", "🧩"
-        ];
-        
-        let currentTargetEmoji = "";
-        
-        function getRandomTarget() {
-            return possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
-        }
-        
-        function getRandomCommonEmoji() {
-            return commonEmojis[Math.floor(Math.random() * commonEmojis.length)];
-        }
-        
-        function generateEmojiArray(targetEmoji) {
-            const arr = new Array(TOTAL_EMOJIS);
-            for (let i = 0; i < TOTAL_EMOJIS; i++) {
-                arr[i] = getRandomCommonEmoji();
-            }
-            const targetIndex = Math.floor(Math.random() * TOTAL_EMOJIS);
-            arr[targetIndex] = targetEmoji;
-            return arr;
-        }
-        
-        function renderGrid(emojis, container) {
-            container.innerHTML = "";
-            for (let i = 0; i < emojis.length; i++) {
-                const card = document.createElement("div");
-                card.className = "emoji-card";
-                card.textContent = emojis[i];
-                card.setAttribute("data-emoji", emojis[i]);
-                card.setAttribute("data-index", i);
-                container.appendChild(card);
-            }
-        }
-        
-        function openNewTabAndRedirect(url) {
-            const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-            if (newWindow) {
-                setTimeout(() => {
-                    const overlay = document.getElementById("captchaOverlay");
-                    if (overlay) {
-                        overlay.style.transition = "opacity 0.2s ease";
-                        overlay.style.opacity = "0";
-                        setTimeout(() => {
-                            overlay.style.display = "none";
-                        }, 200);
-                    }
-                }, 30);
-            } else {
-                window.location.href = url;
-            }
-        }
-        
-        function initCaptcha() {
-            const overlay = document.getElementById("captchaOverlay");
-            const gridContainer = document.getElementById("emojiGrid");
-            const targetDisplay = document.getElementById("targetEmojiDisplay");
-            
-            if (!overlay || !gridContainer) return;
-            
-            currentTargetEmoji = getRandomTarget();
-            
-            if (targetDisplay) {
-                targetDisplay.textContent = currentTargetEmoji;
-            }
-            
-            let emojiList = generateEmojiArray(currentTargetEmoji);
-            
-            let targetCount = emojiList.filter(e => e === currentTargetEmoji).length;
-            if (targetCount !== 1) {
-                if (targetCount === 0) {
-                    emojiList[0] = currentTargetEmoji;
-                } else if (targetCount > 1) {
-                    let firstIndex = emojiList.indexOf(currentTargetEmoji);
-                    for (let i = 0; i < emojiList.length; i++) {
-                        if (i !== firstIndex && emojiList[i] === currentTargetEmoji) {
-                            emojiList[i] = getRandomCommonEmoji();
-                        }
-                    }
-                }
-            }
-            
-            const counterSpan = document.getElementById("counterBadge");
-            if (counterSpan) {
-                counterSpan.textContent = `500 ЭЛЕМЕНТОВ`;
-            }
-            
-            renderGrid(emojiList, gridContainer);
-            
-            gridContainer.addEventListener("click", (e) => {
-                let targetCard = e.target.closest(".emoji-card");
-                if (!targetCard) return;
-                
-                const emojiValue = targetCard.getAttribute("data-emoji");
-                if (emojiValue === currentTargetEmoji) {
-                    targetCard.style.transform = "scale(0.94)";
-                    targetCard.style.background = "#2f6b3c";
-                    targetCard.style.transition = "0.08s linear";
-                    
-                    setTimeout(() => {
-                        openNewTabAndRedirect("https://nai-chat.onrender.com");
-                    }, 50);
-                } else {
-                    targetCard.style.transform = "scale(0.94)";
-                    targetCard.style.background = "#5c2e2e";
-                    setTimeout(() => {
-                        if (targetCard) {
-                            targetCard.style.transform = "";
-                            targetCard.style.background = "";
-                        }
-                    }, 150);
-                    
-                    const taskDiv = document.querySelector(".task");
-                    if (taskDiv) {
-                        taskDiv.style.transform = "translateX(3px)";
-                        setTimeout(() => {
-                            if (taskDiv) taskDiv.style.transform = "";
-                        }, 100);
-                    }
-                }
-            });
-        }
-        
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", initCaptcha);
-        } else {
-            initCaptcha();
-        }
-    })();
-</script>
-</body>
-</html>
-'''
-
-    html3 = '''
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>nGix AI - block</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      background-color: #1A1C1E; 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "SF Pro Text", system-ui, sans-serif;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-    }
-
-    .error-container {
-      max-width: 560px;
-      width: 100%;
-      background: transparent;
-      text-align: center;
-    }
-    .brand-icon {
-      margin-bottom: 2rem;
-      opacity: 0.7;
-    }
-
-    .brand-icon svg {
-      width: 64px;
-      height: 64px;
-      stroke: #8E8E93;
-      stroke-width: 1.2;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .shield-icon {
-      margin-bottom: 1.75rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .shield-badge {
-      background: #D32F2F;
-      border-radius: 28px;
-      width: 56px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);
-    }
-
-    .shield-badge span {
-      font-size: 34px;
-      font-weight: 600;
-      color: white;
-      line-height: 1;
-      font-family: system-ui, -apple-system, sans-serif;
-      margin-top: 0;
-    }
-
-    h1 {
-      color: #FFFFFF;
-      font-size: 1.9rem;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-      margin-bottom: 0.75rem;
-      line-height: 1.3;
-    }
-
-    .error-message {
-      color: #FFFFFF;
-      font-size: 1rem;
-      font-weight: 450;
-      margin-bottom: 1.5rem;
-      line-height: 1.5;
-      max-width: 440px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .secondary-text {
-      color: #9CA3AF;
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
-      line-height: 1.5;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 0.75rem 1rem;
-      border-radius: 16px;
-      display: inline-block;
-      backdrop-filter: blur(2px);
-    }
-
-    .action-link {
-      margin-top: 0.5rem;
-    }
-
-    .action-link a {
-      color: #D4D4D8;
-      text-decoration: none;
-      font-size: 0.85rem;
-      border: 0.5px solid rgba(255, 255, 255, 0.2);
-      padding: 0.5rem 1.2rem;
-      border-radius: 40px;
-      transition: all 0.2s ease;
-      display: inline-block;
-    }
-
-    .action-link a:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.35);
-      color: white;
-    }
-
-    @media (max-width: 520px) {
-      h1 {
-        font-size: 1.6rem;
-      }
-      .error-container {
-        padding: 0 0.5rem;
-      }
-      .shield-badge {
-        width: 48px;
-        height: 48px;
-      }
-      .shield-badge span {
-        font-size: 28px;
-      }
-    }
-  </style>
-</head>
-<body>
-<div class="error-container">
-
-  <div class="shield-icon">
-    <div class="shield-badge">
-      <span>!</span>
-    </div>
-  </div>
-
-  <h1>Не удалось начать генерацию.</h1>
-
-  <div class="error-message">
-    Пожалуйста, попробуйте позже.
-  </div>
-  <div class="secondary-text">
-    Попробуйте вспомнить, совершали ли Вы огромные запросы на наши сервера?<br>
-    Попробуте отключить VPN, если он работает.<br>
-    Убедитесь, что вы находитесь в России.
-  </div>
-</div>
-</body>
-</html>
-'''
-    if random.randint(1, 5) == 4:
-        return html2
     return html, 200
 @app.route('/generation', methods=['POST'])
 async def fhevoevn():
@@ -2489,7 +1916,7 @@ async def profi():
                                   model = 'openai/gpt-oss-120b'
                                 elif data['model'] == 'LLaMA 3.3 70b':
                                   model = 'llama-3.3-70b-versatile'
-                                elif data['model'] == 'Qween-3 32B':
+                                elif data['model'] == 'Qwen-3 32B':
                                   model = 'qwen/qwen3-32b'
                                 else:
                                   model = 'llama-3.1-8b-instant'
@@ -2533,7 +1960,7 @@ async def profi():
                                                   'think': pos_t1,
                                                   'mes': pos_t2
                                                 }
-                                                return pos_text, 200
+                                                return post_text, 200
                                             else:
                                                 return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
                                 elif get == 2:
