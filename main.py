@@ -7,17 +7,32 @@ import random
 from io import BytesIO
 import os
 
+servers = True
+zaponhour = 0
 ipis = {}
+banforewer = []
 bansipis = []
 reqts = {}
 notam = []
 
+async def hour():
+  global zaponhour 
+  while True:
+    zaponhour = 0
+    servers = True
+    await asyncio.sleep(3600)
 async def rptsts():
   global reqts, bansipis
   while True:
     for i in reqts:
       try:
-        reqts[i] = 0
+        if reqts[i] > 10:
+          bansipis.append(i)
+        elif reqts[i] > 20:
+          bansipis.append(i)
+          banforewer.append(i)
+        else:
+          reqts[i] = 0
       except:
         pass
     await asyncio.sleep(20)
@@ -47,7 +62,7 @@ async def modelscheck():
             'temperature': 0.7
         }
         async with aiohttp.ClientSession() as s:
-          async with s.post('https://api.groq.com/openai/v1/chat/completions', headers=one, json=two) as pos:
+          async with s.post('', headers=one, json=two) as pos:
             if pos.status == 200:
               notam.remove(model)
     else:
@@ -81,7 +96,7 @@ async def rptd():
   global rpts
   while True:
     rpts = 0
-    await asyncio.sleep(10)
+    await asyncio.sleep(20)
 async def prmptgrd(text):
     words = [
 
@@ -141,13 +156,23 @@ async def nolim():
     while True:
         dayreq = 0
         dayreqgen = 0
-        bansipis = []
+        bansipis = banforewer
         for i in ipis:
             try:
                 ipis[i] = 0
             except:
                 pass
         await asyncio.sleep(86400)
+async def ddosanti():
+  while True:
+        bansipis = []
+        for i in ipis:
+            try:
+                ipis[i] = 0
+            except:
+                pass
+        print(f'Принять действия - {bansipis}')
+        await asyncio.sleep(172800)
 
 async def ping_server():
     url = "https://nai-chat.onrender.com"
@@ -1727,7 +1752,7 @@ async def gbREB():
     return html, 200
 @app.route('/generation', methods=['POST'])
 async def fhevoevn():
-        global dayreq, rpts
+        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis
         user_agent = request.headers.get('User-Agent', '')
         origin = request.headers.get('Origin', '')
         referer = request.headers.get('Referer', '')
@@ -1742,13 +1767,16 @@ async def fhevoevn():
             return 'Forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower() or 'aiohttp' in user_agent.lower():
             return '403', 403
+        if zaponhour > 3999:
+          servers = False
+        if servers == False:
+          return 'Простите, сервера выключены для безопасности.'
         client_ip = x_forwarded_for
         if client_ip not in reqts:
           reqts[str(client_ip)] = 0
-        if reqts[client_ip] > 7:
-          if client_ip not in bansipis:
-            bansipis.append(client_ip)
         ipy = await getip(client_ip)
+        if reqts[str(client_ip)] > 10:
+          bansipis.apppend(str(client_ip))
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
@@ -1796,6 +1824,7 @@ async def fhevoevn():
                                         try:
                                           ipis[str(client_ip)] += 1
                                           reqts[str(client_ip)] += 1
+                                          zaponhour += 1
                                         except:
                                           pass
                                         return pos_text, 200
@@ -1816,7 +1845,7 @@ async def fhevoevn():
 
 @app.route('/genphot', methods=['POST'])
 async def genph():
-        global dayreqgen, rpts
+        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis
         user_agent = request.headers.get('User-Agent', '')
         origin = request.headers.get('Origin', '')
         referer = request.headers.get('Referer', '')
@@ -1825,11 +1854,12 @@ async def genph():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         # Смягчаем проверки для локальной разработки
-        if reqts[client_ip] > 7:
-          if client_ip not in bansipis:
-            bansipis.append(client_ip)
         if host and host != 'nai-chat.onrender.com' and host != '127.0.0.1:10000' and host != 'localhost:10000':
             return 'forbidden', 403
+        if zaponhour > 3999:
+          servers = False
+        if servers == False:
+          return 'Простите, сервера выключены для безопасности.'
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
         if rpts > 7:
@@ -1838,6 +1868,8 @@ async def genph():
         if client_ip not in reqts:
           reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
+        if reqts[str(client_ip)] > 10:
+          bansipis.apppend(str(client_ip))
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
@@ -1873,6 +1905,7 @@ async def genph():
                             try:
                               ipis[str(client_ip)] += 1
                               reqts[str(client_ip)] += 1
+                              zaponhour += 1
                             except:
                               pass
                             return image_bytes, 200, {'Content-Type': 'image/png'}
@@ -1895,7 +1928,7 @@ async def genph():
 
 @app.route('/math', methods=['POST'])
 async def match():
-        global dayreq, rpts
+        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis
         user_agent = request.headers.get('User-Agent', '')
         origin = request.headers.get('Origin', '')
         referer = request.headers.get('Referer', '')
@@ -1904,12 +1937,15 @@ async def match():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
+        if zaponhour > 3999:
+          servers = False
         if client_ip not in reqts:
           reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
-        if reqts[client_ip] > 7:
-          if client_ip not in bansipis:
-            bansipis.append(client_ip)
+        if reqts[str(client_ip)] > 10:
+          bansipis.apppend(str(client_ip))
+        if servers == False:
+          return 'Простите, сервера выключены для безопасности.'
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         # Смягчаем проверки для локальной разработки
@@ -1963,6 +1999,7 @@ async def match():
                                         try:
                                           ipis[str(client_ip)] += 1
                                           reqts[str(client_ip)] += 1
+                                          zaponhour += 1
                                         except:
                                           pass
                                         return pos_text, 200
@@ -1985,7 +2022,7 @@ async def match():
 
 @app.route('/profi', methods=['POST'])
 async def profi():
-        global dayreq, proreq, rpts
+        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis
         user_agent = request.headers.get('User-Agent', '')
         origin = request.headers.get('Origin', '')
         referer = request.headers.get('Referer', '')
@@ -1994,12 +2031,15 @@ async def profi():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
-        if reqts[client_ip] > 7:
-          if client_ip not in bansipis:
-            bansipis.append(client_ip)
+        if zaponhour > 3999:
+          servers = False
+        if servers == False:
+          return 'Простите, сервера выключены для безопасности.'
         if client_ip not in reqts:
           reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
+        if reqts[str(client_ip)] > 10:
+          bansipis.apppend(str(client_ip))
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         # Смягчаем проверки для локальной разработки
@@ -2066,6 +2106,7 @@ async def profi():
                                                 rpts += 1
                                                 try:
                                                   ipis[str(client_ip)] += 1
+                                                  zaponhour += 1
                                                   reqts[str(client_ip)] += 1
                                                 except:
                                                   pass
@@ -2107,11 +2148,8 @@ async def profi():
 async def profujyfi():
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
-    if reqts[client] > 7:
-      if client not in bansipis:
-        bansipis.append(client)
-    if client not in reqts:
-      reqts[str(client)] = 0
+    if client_ip not in reqts:
+      reqts[str(client_ip)] = 0
     ipy = await getip(client)
     if ipy == 2:
       return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2144,11 +2182,8 @@ async def profujyfi():
 async def profujyfiesth():
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
-    if reqts[client] > 7:
-      if client not in bansipis:
-        bansipis.append(client)
-    if client not in reqts:
-      reqts[str(client)] = 0
+    if client_ip not in reqts:
+      reqts[str(client_ip)] = 0
     ipy = await getip(client)
     if ipy == 2:
         return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2211,5 +2246,7 @@ if __name__ == '__main__':
         asyncio.create_task(modelscheck())
         asyncio.create_task(ipischeck())
         asyncio.create_task(rptsts())
+        asyncio.create_task(hour())
+        asyncio.create_task(ddosanti())
         await app.run_task(host='0.0.0.0', port=10000)
     asyncio.run(main())
