@@ -525,36 +525,61 @@ async def gbREB():
       color: var(--text-primary);
     }
 
-    /* Стили для сообщения с блоком рассуждений (Qwen) */
-    .message-bot.think-block {
+    /* Новый стиль: сообщение бота с кнопкой Рассуждение */
+    .message-bot.think-message-wrapper {
       padding: 0;
-      overflow: hidden;
-      border-left: none;
       background: transparent;
+      border-left: none;
+      max-width: 85%;
+      width: fit-content;
+      align-self: flex-start;
+      display: flex;
+      flex-direction: column;
     }
-    .think-content {
-      background: #2c3e66;
-      color: #e0e7ff;
-      padding: 10px 16px;
-      border-radius: 18px;
-      border-bottom-left-radius: 4px;
-      font-style: italic;
-      font-size: 13px;
-      margin-bottom: 8px;
-      border-left: 3px solid #ffd966;
-    }
-    .message-content {
+    .bot-message-content {
       background: var(--input-bg);
       padding: 10px 16px;
       border-radius: 18px;
       border-bottom-left-radius: 4px;
       border-left: 2px solid #615ced;
       color: var(--text-primary);
+      margin-bottom: 6px;
     }
-    html.dark .think-content {
+    .think-toggle-btn {
+      background: rgba(97, 92, 237, 0.12);
+      border: none;
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #615ced;
+      cursor: pointer;
+      width: fit-content;
+      transition: all 0.2s ease;
+      margin-top: 2px;
+    }
+    .think-toggle-btn:hover {
+      background: rgba(97, 92, 237, 0.25);
+    }
+    .think-hidden-text {
+      display: none;
+      margin-top: 8px;
+      background: #2c3e66;
+      color: #e0e7ff;
+      padding: 8px 12px;
+      border-radius: 14px;
+      font-size: 12px;
+      line-height: 1.4;
+      border-left: 3px solid #ffd966;
+      font-style: italic;
+    }
+    html.dark .think-hidden-text {
       background: #1e2a4a;
       color: #cbd5ff;
       border-left-color: #f0b429;
+    }
+    .think-hidden-text.visible {
+      display: block;
     }
 
     .message-error {
@@ -847,6 +872,11 @@ async def gbREB():
           transform: translate(60px, -50px) rotate(35deg);
           opacity: 0;
         }
+      }
+      /* Исправление скролла на телефонах */
+      .chat-messages-area {
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
       }
     }
   </style>
@@ -1243,28 +1273,40 @@ async def gbREB():
       if (dropdown) dropdown.classList.remove('active');
     }
     
+    // addMessage с поддержкой Qwen: кнопка "Рассуждение"
     function addMessage(text, sender, isError = false, think = null) {
       if (!activeMessagesArea) {
         switchToChatMode();
       }
       
-      if (sender === 'bot' && think && think.trim() !== '') {
-        // Специальный блок для Qwen с рассуждением
-        const container = document.createElement('div');
-        container.className = 'message-bot think-block';
-        
-        const thinkDiv = document.createElement('div');
-        thinkDiv.className = 'think-content';
-        thinkDiv.textContent = '🤔 Рассуждение: ' + think;
+      if (sender === 'bot' && think && think.trim() !== '' && !isError) {
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.className = 'message-bot think-message-wrapper';
         
         const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
+        contentDiv.className = 'bot-message-content';
         contentDiv.textContent = text;
         
-        container.appendChild(thinkDiv);
-        container.appendChild(contentDiv);
-        activeMessagesArea.appendChild(container);
-      } else {
+        const btn = document.createElement('button');
+        btn.className = 'think-toggle-btn';
+        btn.textContent = '💭 Рассуждение';
+        
+        const thinkDiv = document.createElement('div');
+        thinkDiv.className = 'think-hidden-text';
+        thinkDiv.textContent = think;
+        
+        btn.addEventListener('click', () => {
+          thinkDiv.classList.toggle('visible');
+          btn.textContent = thinkDiv.classList.contains('visible') ? '🤔 Скрыть рассуждение' : '💭 Рассуждение';
+          scrollChatToBottom();
+        });
+        
+        wrapperDiv.appendChild(contentDiv);
+        wrapperDiv.appendChild(btn);
+        wrapperDiv.appendChild(thinkDiv);
+        activeMessagesArea.appendChild(wrapperDiv);
+      } 
+      else {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message-bubble message-${sender}`;
         if (isError) msgDiv.classList.add('message-error');
@@ -1298,23 +1340,20 @@ async def gbREB():
     function getDialogHistory(excludeLastUser = false) {
       if (!activeMessagesArea) return '';
       const messages = [];
-      const bubbles = activeMessagesArea.querySelectorAll('.message-bubble, .message-bot.think-block');
-      for (let i = 0; i < bubbles.length; i++) {
-        const bubble = bubbles[i];
-        let text = '';
-        if (bubble.classList.contains('message-bubble')) {
-          text = bubble.textContent.trim();
-          if (bubble.classList.contains('message-user')) {
-            messages.push(`user: ${text}`);
-          } else if (bubble.classList.contains('message-bot') && !bubble.classList.contains('message-error')) {
-            if (text && !text.includes('Режим изменён')) {
-              messages.push(`bot: ${text}`);
-            }
+      const allBlocks = activeMessagesArea.children;
+      for (let i = 0; i < allBlocks.length; i++) {
+        const block = allBlocks[i];
+        if (block.classList && block.classList.contains('message-bubble')) {
+          let text = block.textContent.trim();
+          if (block.classList.contains('message-user')) messages.push(`user: ${text}`);
+          else if (block.classList.contains('message-bot') && !block.classList.contains('message-error')) {
+            if (text && !text.includes('Режим изменён')) messages.push(`bot: ${text}`);
           }
-        } else if (bubble.classList.contains('message-bot') && bubble.classList.contains('think-block')) {
-          const contentDiv = bubble.querySelector('.message-content');
+        } 
+        else if (block.classList && block.classList.contains('think-message-wrapper')) {
+          const contentDiv = block.querySelector('.bot-message-content');
           if (contentDiv) {
-            text = contentDiv.textContent.trim();
+            let text = contentDiv.textContent.trim();
             if (text) messages.push(`bot: ${text}`);
           }
         }
@@ -1546,7 +1585,6 @@ async def gbREB():
             throw new Error(errText);
           }
           const reply = await response.json();
-          // Для Qwen сервер возвращает { think: "...", mes: "..." }
           if (reply.think !== undefined && reply.mes !== undefined) {
             addMessage(reply.mes, 'bot', false, reply.think);
           } else if (typeof reply === 'string') {
@@ -1953,13 +1991,14 @@ async def profi():
                                                   ipis[str(client_ip)] += 0
                                                 except:
                                                   pass
-                                                pos_text = pos_text.split('</think>')
-                                                pos_t1 = pos_text[0].replace('<think>', '').strip()
-                                                pos_t2 = pos_text[1].strip()
-                                                post_text = {
-                                                  'think': pos_t1,
-                                                  'mes': pos_t2
-                                                }
+                                                if model == 'qwen/qwen3-32b':
+                                                  pos_text = pos_text.split('</think>')
+                                                  pos_t1 = pos_text[0].replace('<think>', '').strip()
+                                                  pos_t2 = pos_text[1].strip()
+                                                  post_text = {
+                                                    'think': pos_t1,
+                                                    'mes': pos_t2
+                                                  }
                                                 return post_text, 200
                                             else:
                                                 return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
