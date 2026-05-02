@@ -1,12 +1,63 @@
 from quart import Quart, request, jsonify, Response
 import asyncio
 import aiohttp
+import torch
+import torch.nn as nn
 from datetime import timezone, timedelta
 import datetime
 import random
 from io import BytesIO
 import os
+import time
+lastlstmgen = 0
+lstmgen = 0
+potoks = 0
+itw = {0: '\t', 1: ' ', 2: '!', 3: '"', 4: '#', 5: '$', 6: '%', 7: '(', 8: ')', 9: '*', 10: '+', 11: ',', 12: '-', 13: '.', 14: '/', 15: '0', 16: '1', 17: '2', 18: '3', 19: '4', 20: '5', 21: '6', 22: '7', 23: '8', 24: '9', 25: ':', 26: ';', 27: '=', 28: '>', 29: '?', 30: 'A', 31: 'B', 32: 'C', 33: 'D', 34: 'E', 35: 'F', 36: 'G', 37: 'H', 38: 'I', 39: 'J', 40: 'K', 41: 'L', 42: 'M', 43: 'N', 44: 'O', 45: 'P', 46: 'Q', 47: 'R', 48: 'S', 49: 'T', 50: 'U', 51: 'V', 52: 'W', 53: 'X', 54: 'Y', 55: 'Z', 56: '[', 57: ']', 58: '_', 59: 'a', 60: 'b', 61: 'c', 62: 'd', 63: 'e', 64: 'f', 65: 'g', 66: 'h', 67: 'i', 68: 'j', 69: 'k', 70: 'l', 71: 'm', 72: 'n', 73: 'o', 74: 'p', 75: 'q', 76: 'r', 77: 's', 78: 't', 79: 'u', 80: 'v', 81: 'w', 82: 'x', 83: 'y', 84: 'z', 85: '«', 86: '°', 87: '»', 88: 'Á', 89: 'É', 90: 'Í', 91: 'Ó', 92: 'Ö', 93: 'Ú', 94: 'Ü', 95: 'à', 96: 'á', 97: 'â', 98: 'ä', 99: 'ç', 100: 'è', 101: 'é', 102: 'ê', 103: 'í', 104: 'î', 105: 'ï', 106: 'ó', 107: 'ô', 108: 'ö', 109: 'ù', 110: 'ú', 111: 'ü', 112: 'ý', 113: 'Ő', 114: 'ő', 115: 'œ', 116: 'Ű', 117: 'ű', 118: '́', 119: 'Ё', 120: 'А', 121: 'Б', 122: 'В', 123: 'Г', 124: 'Д', 125: 'Е', 126: 'Ж', 127: 'З', 128: 'И', 129: 'Й', 130: 'К', 131: 'Л', 132: 'М', 133: 'Н', 134: 'О', 135: 'П', 136: 'Р', 137: 'С', 138: 'Т', 139: 'У', 140: 'Ф', 141: 'Х', 142: 'Ц', 143: 'Ч', 144: 'Ш', 145: 'Щ', 146: 'Ы', 147: 'Ь', 148: 'Э', 149: 'Ю', 150: 'Я', 151: 'а', 152: 'б', 153: 'в', 154: 'г', 155: 'д', 156: 'е', 157: 'ж', 158: 'з', 159: 'и', 160: 'й', 161: 'к', 162: 'л', 163: 'м', 164: 'н', 165: 'о', 166: 'п', 167: 'р', 168: 'с', 169: 'т', 170: 'у', 171: 'ф', 172: 'х', 173: 'ц', 174: 'ч', 175: 'ш', 176: 'щ', 177: 'ъ', 178: 'ы', 179: 'ь', 180: 'э', 181: 'ю', 182: 'я', 183: 'ё', 184: '\u200b', 185: '‑', 186: '–', 187: '—', 188: '‘', 189: '’', 190: '“', 191: '”', 192: '„', 193: '•', 194: '…', 195: '™', 196: '←', 197: '→', 198: '⚠', 199: '⚡', 200: '✅', 201: '利', 202: '顺', 203: '️', 204: '🆓', 205: '🇷', 206: '🇺', 207: '🌍', 208: '🎯', 209: '🏆', 210: '💡', 211: '💰', 212: '📊', 213: '📍', 214: '📝', 215: '📞', 216: '📱', 217: '📲', 218: '🔄', 219: '🔍', 220: '🔓', 221: '🔧', 222: '🚀', 223: '🚨', 224: '🛠', 225: '🛡', 226: '🤔', 227: '🥇', 228: '🥈', 229: '🥉'}
+wti = {'\t': 0, ' ': 1, '!': 2, '"': 3, '#': 4, '$': 5, '%': 6, '(': 7, ')': 8, '*': 9, '+': 10, ',': 11, '-': 12, '.': 13, '/': 14, '0': 15, '1': 16, '2': 17, '3': 18, '4': 19, '5': 20, '6': 21, '7': 22, '8': 23, '9': 24, ':': 25, ';': 26, '=': 27, '>': 28, '?': 29, 'A': 30, 'B': 31, 'C': 32, 'D': 33, 'E': 34, 'F': 35, 'G': 36, 'H': 37, 'I': 38, 'J': 39, 'K': 40, 'L': 41, 'M': 42, 'N': 43, 'O': 44, 'P': 45, 'Q': 46, 'R': 47, 'S': 48, 'T': 49, 'U': 50, 'V': 51, 'W': 52, 'X': 53, 'Y': 54, 'Z': 55, '[': 56, ']': 57, '_': 58, 'a': 59, 'b': 60, 'c': 61, 'd': 62, 'e': 63, 'f': 64, 'g': 65, 'h': 66, 'i': 67, 'j': 68, 'k': 69, 'l': 70, 'm': 71, 'n': 72, 'o': 73, 'p': 74, 'q': 75, 'r': 76, 's': 77, 't': 78, 'u': 79, 'v': 80, 'w': 81, 'x': 82, 'y': 83, 'z': 84, '«': 85, '°': 86, '»': 87, 'Á': 88, 'É': 89, 'Í': 90, 'Ó': 91, 'Ö': 92, 'Ú': 93, 'Ü': 94, 'à': 95, 'á': 96, 'â': 97, 'ä': 98, 'ç': 99, 'è': 100, 'é': 101, 'ê': 102, 'í': 103, 'î': 104, 'ï': 105, 'ó': 106, 'ô': 107, 'ö': 108, 'ù': 109, 'ú': 110, 'ü': 111, 'ý': 112, 'Ő': 113, 'ő': 114, 'œ': 115, 'Ű': 116, 'ű': 117, '́': 118, 'Ё': 119, 'А': 120, 'Б': 121, 'В': 122, 'Г': 123, 'Д': 124, 'Е': 125, 'Ж': 126, 'З': 127, 'И': 128, 'Й': 129, 'К': 130, 'Л': 131, 'М': 132, 'Н': 133, 'О': 134, 'П': 135, 'Р': 136, 'С': 137, 'Т': 138, 'У': 139, 'Ф': 140, 'Х': 141, 'Ц': 142, 'Ч': 143, 'Ш': 144, 'Щ': 145, 'Ы': 146, 'Ь': 147, 'Э': 148, 'Ю': 149, 'Я': 150, 'а': 151, 'б': 152, 'в': 153, 'г': 154, 'д': 155, 'е': 156, 'ж': 157, 'з': 158, 'и': 159, 'й': 160, 'к': 161, 'л': 162, 'м': 163, 'н': 164, 'о': 165, 'п': 166, 'р': 167, 'с': 168, 'т': 169, 'у': 170, 'ф': 171, 'х': 172, 'ц': 173, 'ч': 174, 'ш': 175, 'щ': 176, 'ъ': 177, 'ы': 178, 'ь': 179, 'э': 180, 'ю': 181, 'я': 182, 'ё': 183, '\u200b': 184, '‑': 185, '–': 186, '—': 187, '‘': 188, '’': 189, '“': 190, '”': 191, '„': 192, '•': 193, '…': 194, '™': 195, '←': 196, '→': 197, '⚠': 198, '⚡': 199, '✅': 200, '利': 201, '顺': 202, '️': 203, '🆓': 204, '🇷': 205, '🇺': 206, '🌍': 207, '🎯': 208, '🏆': 209, '💡 💡': 210, '💰': 211, '📊': 212, '📍': 213, '📝': 214, '📞': 215, '📱': 216, '📲': 217, '🔄': 218, '🔍': 219, '🔓': 220, '🔧': 221, '🚀': 222, '🚨': 223, '🛠': 224, '🛡': 225, '🤔': 226, '🥇': 227, '🥈': 228, '🥉': 229}
+class AI(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.embai = nn.Embedding(230, 256)
+        self.lsai = nn.LSTM(256, 512, batch_first=True, dropout=0.3, num_layers=1)
+        self.linai = nn.Linear(512, 230)
 
+    def forward(self, x):
+        x = self.embai(x)
+        if x.dim() == 2:
+            x = x.unsqueeze(0)
+        x, _ = self.lsai(x)
+        x = x[:, -1, :]
+        x = self.linai(x)
+        return x
+model = AI()
+model.load_state_dict(torch.load('model.pth', map_location='cpu'))
+model.eval()
+def generation(text):
+  text = list(text)
+  ss = []
+  for i in text:
+    try:
+      ss.append(wti[i])
+    except:
+      ss.append(wti[' '])
+  for i in range(25):
+    sss = torch.tensor(ss)
+    otv = model(sss)
+    otv = torch.argmax(otv, dim=1).item()
+    ss.append(otv)
+    ss = ss[-128:]
+  txtx = ''
+  for i in ss:
+    try:
+      txtx += itw[i]
+    except:
+      pass
+  return txtx
+
+
+url = 'https://api.groq.com/openai/v1/chat/completions'
+servs = {
+}
 servers = True
 zaponhour = 0
 ipis = {}
@@ -16,19 +67,24 @@ reqts = {}
 notam = []
 
 async def hour():
-  global zaponhour 
+  global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
   while True:
     zaponhour = 0
     servers = True
     await asyncio.sleep(3600)
+async def hoii():
+  global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
+  while True:
+    url = 'https://api.groq.com/openai/v1/chat/completions'
+    await asyncio.sleep(4200)
 async def rptsts():
-  global reqts, bansipis
+  global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
   while True:
     for i in reqts:
       try:
         if reqts[i] > 10:
           bansipis.append(i)
-        elif reqts[i] > 20:
+        elif reqts[i] > 30:
           bansipis.append(i)
           banforewer.append(i)
         else:
@@ -38,7 +94,7 @@ async def rptsts():
     await asyncio.sleep(20)
 
 async def modelscheck():
-  global notam
+  global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
   while True:
     if notam:
       for i in notam:
@@ -64,7 +120,7 @@ async def modelscheck():
         async with aiohttp.ClientSession() as s:
           async with s.post('', headers=one, json=two) as pos:
             if pos.status == 200:
-              notam.remove(model)
+              notam.remove(i)
     else:
       pass
     await asyncio.sleep(600)
@@ -82,7 +138,7 @@ async def getip(ip):
       else:
         return 1
 async def ipischeck():
-  global ipis
+  global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
   while True:
     for i in ipis:
       if ipis[i] > 299:
@@ -93,10 +149,10 @@ dayreq = 0
 dayreqgen = 0
 proreq = 0
 async def rptd():
-  global rpts
+  global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
   while True:
     rpts = 0
-    await asyncio.sleep(20)
+    await asyncio.sleep(25)
 async def prmptgrd(text):
     words = [
 
@@ -152,10 +208,11 @@ users = {}
 app = Quart(__name__)
 
 async def nolim():
-    global dayreq, dayreqgen, bansipis
+    global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam, banforewer, lstmgen
     while True:
         dayreq = 0
         dayreqgen = 0
+        lstmgen = 0
         bansipis = banforewer
         for i in ipis:
             try:
@@ -164,6 +221,7 @@ async def nolim():
                 pass
         await asyncio.sleep(86400)
 async def ddosanti():
+  global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
   while True:
         bansipis = []
         for i in ipis:
@@ -172,7 +230,7 @@ async def ddosanti():
             except:
                 pass
         print(f'Принять действия - {bansipis}')
-        await asyncio.sleep(172800)
+        await asyncio.sleep(86400)
 
 async def ping_server():
     url = "https://nai-chat.onrender.com"
@@ -342,6 +400,454 @@ async def hedfkbnl():
 </html>
 '''
   return html, 200
+@app.route('/models')
+async def kejghjkler():
+    html = '''
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>nGix all AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0a0a0f, #030305);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 40% 50%, rgba(20, 30, 55, 0.4) 0%, rgba(0, 0, 0, 0.7) 80%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glass-panel {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 100px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: rgba(220, 220, 255, 0.9);
+            margin-bottom: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: clamp(2rem, 8vw, 3.8rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 30%, #b0b0ff 70%, #7a7aff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .sub {
+            color: rgba(200, 200, 240, 0.7);
+            font-size: clamp(0.9rem, 4vw, 1.1rem);
+            font-weight: 400;
+            backdrop-filter: blur(4px);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .glass-card {
+            background: rgba(12, 12, 20, 0.45);
+            backdrop-filter: blur(12px);
+            border-radius: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .glass-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 10%, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+            pointer-events: none;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.35);
+            background: rgba(15, 15, 25, 0.65);
+            box-shadow: 0 30px 45px -12px black;
+        }
+
+        .card-header {
+            padding: 1.8rem 1.8rem 0.8rem 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .model-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 6px rgba(100, 100, 255, 0.5));
+        }
+
+        .model-name {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(120deg, #fff, #ccc0ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .version {
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+            font-weight: 500;
+            color: #b9b9ff;
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .content {
+            padding: 0.2rem 1.8rem 1.4rem 1.8rem;
+        }
+
+        .desc {
+            color: #ddddff;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            font-weight: 400;
+            margin-bottom: 1.2rem;
+            opacity: 0.85;
+        }
+
+        .spec-list {
+            list-style: none;
+            margin: 1rem 0 1rem 0;
+        }
+
+        .spec-list li {
+            display: flex;
+            align-items: baseline;
+            gap: 0.7rem;
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: #cbcbf3;
+        }
+
+        .spec-label {
+            font-weight: 600;
+            min-width: 85px;
+            color: #b3aaff;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .spec-value {
+            font-weight: 400;
+            color: #f0f0ff;
+            word-break: break-word;
+        }
+
+        .tech-badge {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1.2rem 0 0.8rem 0;
+        }
+
+        .tech {
+            background: rgba(50, 50, 80, 0.6);
+            border-radius: 40px;
+            padding: 0.2rem 0.9rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #cdcdff;
+            backdrop-filter: blur(4px);
+            border: 0.5px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .footer-card {
+            padding: 1rem 1.8rem 1.6rem 1.8rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .token {
+            font-size: 0.75rem;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.3rem 0.8rem;
+            border-radius: 28px;
+            color: #9f9fff;
+            font-family: monospace;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-demo {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #e0e0ff;
+            cursor: default;
+            transition: 0.2s;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-demo:hover {
+            background: rgba(120, 100, 255, 0.25);
+            border-color: rgba(180, 160, 255, 0.6);
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 1.2rem;
+            }
+            .card-header {
+                padding: 1.2rem 1.2rem 0.4rem 1.2rem;
+            }
+            .content {
+                padding: 0.2rem 1.2rem 1rem 1.2rem;
+            }
+            .footer-card {
+                padding: 0.8rem 1.2rem 1.2rem 1.2rem;
+            }
+            .spec-label {
+                min-width: 70px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid {
+                gap: 1.2rem;
+            }
+            .glass-card {
+                border-radius: 1.8rem;
+            }
+            .model-name {
+                font-size: 1.4rem;
+            }
+        }
+
+        .glow-effect {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(80, 70, 200, 0.3), transparent 70%);
+            border-radius: 50%;
+            filter: blur(50px);
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-panel">
+    <div class="header">
+        <h1>NAI - Full FREE AI.</h1>
+        <div class="sub">Документация наших моделей.</div>
+    </div>
+
+    <div class="grid">
+        
+        <div class="glass-card">
+            <div class="card-header">
+                <span class="model-name">Qwen-3 32B</span>
+                <span class="version">Think</span>
+            </div>
+            <div class="content">
+                <div class="desc">Новая модель в нашем каталоге. Отвечает довольно быстро, поддерживает режим рассуждения. Развернута на Groq. Модель помечена статусом ❕. Относитесь к ответам осторожно, так как модель находится на стадии тесторивания.</div>
+                <ul class="spec-list">
+                    <li><span class="spec-label">Автор</span><span class="spec-value">Alibaba Cloud</span></li>
+                    <li><span class="spec-label">Добавлена</span><span class="spec-value">30.04.2026</span></li>
+                    <li><span class="spec-label">Статус</span><span class="spec-value">❕</span></li>
+                    <li><span class="spec-label">Конец поддержки</span><span class="spec-value">Уточняется</span></li>
+                </ul>
+                <div class="tech-badge">
+                    <span class="tech">Think</span>
+                    <span class="tech">Beta</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="card-header">
+                <span class="model-name">ChatGPT 120B</span>
+                <span class="version">Perfect</span>
+            </div>
+            <div class="content">
+                <div class="desc">Данная модель внимательна к деталям. Отвечает быстро, но иногда с задержками. Развернута на Groq.</div>
+                <ul class="spec-list">
+                    <li><span class="spec-label">Автор</span><span class="spec-value">OpenAI</span></li>
+                    <li><span class="spec-label">Добавлена</span><span class="spec-value">27.04.2026</span></li>
+                    <li><span class="spec-label">Статус</span><span class="spec-value">✅</span></li>
+                    <li><span class="spec-label">Конец поддержки</span><span class="spec-value">Не ожидается.</span></li>
+                </ul>
+                <div class="tech-badge">
+                    <span class="tech">Perfect</span>
+                    <span class="tech">Biggest</span>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card">
+            <div class="card-header">
+                <span class="model-name">ChatGPT 20B</span>
+                <span class="version">Perfect</span>
+            </div>
+            <div class="content">
+                <div class="desc">Компактная и умная. Хорошо знает русский язык. Развернута на Groq.</div>
+                <ul class="spec-list">
+                    <li><span class="spec-label">Автор</span><span class="spec-value">OpenAI</span></li>
+                    <li><span class="spec-label">Добавлена</span><span class="spec-value">27.04.2026</span></li>
+                    <li><span class="spec-label">Статус</span><span class="spec-value">✅</span></li>
+                    <li><span class="spec-label">Конец поддержки</span><span class="spec-value">Не ожидается.</span></li>
+                </ul>
+                <div class="tech-badge">
+                    <span class="tech">Perfect</span>
+                    <span class="tech">Biggest</span>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card">
+            <div class="card-header">
+                <span class="model-name">LLaMA-3  70B</span>
+                <span class="version">Fun</span>
+            </div>
+            <div class="content">
+                <div class="desc">Самая разговорчивая модель. Всегда поддержит и выслушает вас. Развернута на Groq.</div>
+                <ul class="spec-list">
+                    <li><span class="spec-label">Автор</span><span class="spec-value">Meta AI</span></li>
+                    <li><span class="spec-label">Добавлена</span><span class="spec-value">27.04.2026</span></li>
+                    <li><span class="spec-label">Статус</span><span class="spec-value">✅</span></li>
+                    <li><span class="spec-label">Конец поддержки</span><span class="spec-value">Не ожидается.</span></li>
+                </ul>
+                <div class="tech-badge">
+                    <span class="tech">Code</span>
+                    <span class="tech">Fun</span>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card">
+            <div class="card-header">
+                <span class="model-name">LLaMA-3  8B</span>
+                <span class="version">Fun</span>
+            </div>
+            <div class="content">
+                <div class="desc">Самыая странная модель. Ответит по смыслу, но не идеально. Развернута на Groq.</div>
+                <ul class="spec-list">
+                    <li><span class="spec-label">Автор</span><span class="spec-value">Meta AI</span></li>
+                    <li><span class="spec-label">Добавлена</span><span class="spec-value">27.04.2026</span></li>
+                    <li><span class="spec-label">Статус</span><span class="spec-value">✅</span></li>
+                    <li><span class="spec-label">Конец поддержки</span><span class="spec-value">Не ожидается.</span></li>
+                </ul>
+                <div class="tech-badge">
+                    <span class="tech">Code</span>
+                    <span class="tech">Fun</span>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card">
+            <div class="card-header">
+                <span class="model-name">LLLaMA-4 Scout 17B</span>
+                <span class="version">Pro</span>
+            </div>
+            <div class="content">
+                <div class="desc">Новейшая модель от Meta AI, высокое качество генерации. Развернута на Groq. Модель помечена статусом ❕. Относитесь к ответам осторожно, так как модель находится на стадии тесторивания.</div>
+                <ul class="spec-list">
+                    <li><span class="spec-label">Автор</span><span class="spec-value">Meta AI</span></li>
+                    <li><span class="spec-label">Добавлена</span><span class="spec-value">01.05.2026</span></li>
+                    <li><span class="spec-label">Статус</span><span class="spec-value">❕</span></li>
+                    <li><span class="spec-label">Конец поддержки</span><span class="spec-value">Обсуждается.</span></li>
+                </ul>
+                <div class="tech-badge">
+                    <span class="tech">Code</span>
+                    <span class="tech">Pro</span>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card">
+            <div class="card-header">
+                <span class="model-name">MagicText-1.2 1M</span>
+                <span class="version">LSTM</span>
+            </div>
+            <div class="content">
+                <div class="desc">Самая устойчивая наша модель, которая не сломается просто так. Развернута у нас. Модель помечена статусом ‼️. Относитесь к ответам осторожно, так как модель находится на начальной стадии тесторивания.</div>
+                <ul class="spec-list">
+                    <li><span class="spec-label">Автор</span><span class="spec-value">RadmirRyan</span></li>
+                    <li><span class="spec-label">Добавлена</span><span class="spec-value">01.05.2026</span></li>
+                    <li><span class="spec-label">Статус</span><span class="spec-value">‼️</span></li>
+                    <li><span class="spec-label">Конец поддержки</span><span class="spec-value">Не планируется.</span></li>
+                </ul>
+                <div class="tech-badge">
+                    <span class="tech">NoErrors</span>
+                    <span class="tech">Hahaha-model</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="glow-effect" style="top: 10%; left: -5%;"></div>
+<div class="glow-effect" style="bottom: 5%; right: -2%; background: radial-gradient(circle, rgba(60,40,170,0.4), transparent);"></div>
+
+</body>
+</html>
+'''
+    return html, 200
 @app.route('/')
 async def gbREB():
     html = '''
@@ -963,6 +1469,9 @@ async def gbREB():
             <div class="model-item" data-model="ChatGPT-120B">ChatGPT-120B</div>
             <div class="model-item" data-model="LLaMA 3.3 70b">LLaMA 3.3 70b</div>
             <div class="model-item" data-model="Qwen-3 32B">Qwen-3 32B</div>
+            <div class="model-item" data-model="MagicText-1.2 1M">MagicText-1.2 1M</div>
+            <div class="model-item" data-model="LLaMA-3.1 8B">LLaMA-3.1 8B</div>
+            <div class="model-item" data-model="LLaMA-4 Scout">LLaMA-4 Scout</div>
           </div>
         </div>
         <div class="header-right"></div>
@@ -1752,7 +2261,7 @@ async def gbREB():
     return html, 200
 @app.route('/generation', methods=['POST'])
 async def fhevoevn():
-        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis
+        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
         user_agent = request.headers.get('User-Agent', '')
         origin = request.headers.get('Origin', '')
         referer = request.headers.get('Referer', '')
@@ -1767,29 +2276,33 @@ async def fhevoevn():
             return 'Forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower() or 'aiohttp' in user_agent.lower():
             return '403', 403
-        if zaponhour > 3999:
+        if zaponhour > 5999:
           servers = False
+          url = ''
         if servers == False:
-          return 'Простите, сервера выключены для безопасности.'
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         client_ip = x_forwarded_for
-        if client_ip not in reqts:
+        client = x_forwarded_for
+        if str(client_ip) not in reqts:
           reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
         if reqts[str(client_ip)] > 10:
-          bansipis.apppend(str(client_ip))
+          bansipis.append(str(client_ip))
+        if str(client_ip) not in servs:
+          servs[str(client)] = {'time': 0}
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) not in ipis:
           ipis[str(client_ip)] = 0
-        if rpts > 7:
-          return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
+        if rpts > 15:
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         try:
             data = await request.get_json()
             if 'text' in data and 'api' in data and 'dialog' in data:
                 if data['api'] == 'jghvhivh65789797T6RJHB':
-                    if dayreq >= 9999:
+                    if dayreq >= 11999:
                         return 'Извините, сервер не в состоянии отвечать. Попробуйте позже.', 429
                     else:
                         one = {
@@ -1813,14 +2326,16 @@ async def fhevoevn():
                         }
                         get = await prmptgrd(data['text'])
                         if get == 1:
-                            await asyncio.sleep(random.randint(1, 7))
+                          await asyncio.sleep(random.randint(1, 7))
+                          if time.time() - servs[str(client_ip)]['time'] > 1 and 'llama-3.1-8b-instant' not in notam:
                             async with aiohttp.ClientSession() as sess:
-                                async with sess.post('https://api.groq.com/openai/v1/chat/completions', headers=one, json=two) as pos:
+                                async with sess.post(url, headers=one, json=two) as pos:
                                     if pos.status == 200:
                                         pos_json = await pos.json()
                                         pos_text = pos_json['choices'][0]['message']['content']
                                         dayreq += 1
                                         rpts += 1
+                                        servs[str(client_ip)]['time'] = time.time()
                                         try:
                                           ipis[str(client_ip)] += 1
                                           reqts[str(client_ip)] += 1
@@ -1830,7 +2345,23 @@ async def fhevoevn():
                                         return pos_text, 200
                                     else:
                                         notam.append('llama-3.1-8b-instant')
+                                        servs[str(client_ip)]['time'] = time.time()
+                                        try:
+                                          ipis[str(client_ip)] += 1
+                                          reqts[str(client_ip)] += 1
+                                          zaponhour += 1
+                                        except:
+                                          pass
                                         return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
+                          else:
+                            servs[str(client_ip)]['time'] = time.time()
+                            try:
+                              ipis[str(client_ip)] += 1
+                              reqts[str(client_ip)] += 1
+                              zaponhour += 1
+                            except:
+                              pass
+                            return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
                         elif get == 2:
                             return 'Простите, но я не буду обрабатывать такой текст.'
                         else:
@@ -1845,7 +2376,7 @@ async def fhevoevn():
 
 @app.route('/genphot', methods=['POST'])
 async def genph():
-        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis
+        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam, dayreqgen
         user_agent = request.headers.get('User-Agent', '')
         origin = request.headers.get('Origin', '')
         referer = request.headers.get('Referer', '')
@@ -1856,20 +2387,24 @@ async def genph():
         # Смягчаем проверки для локальной разработки
         if host and host != 'nai-chat.onrender.com' and host != '127.0.0.1:10000' and host != 'localhost:10000':
             return 'forbidden', 403
-        if zaponhour > 3999:
+        if zaponhour > 5999:
           servers = False
+          url = ''
         if servers == False:
-          return 'Простите, сервера выключены для безопасности.'
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
-        if rpts > 7:
-          return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
+        if rpts > 15:
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         client_ip = x_forwarded_for
-        if client_ip not in reqts:
+        client = x_forwarded_for
+        if str(client_ip) not in reqts:
           reqts[str(client_ip)] = 0
         ipy = await getip(client_ip)
         if reqts[str(client_ip)] > 10:
-          bansipis.apppend(str(client_ip))
+          bansipis.append(str(client_ip))
+        if str(client_ip) not in servs:
+          servs[str(client)] = {'time': 0}
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
@@ -1892,27 +2427,45 @@ async def genph():
             two = {
                 'prompt': data['text']
             }
-            await asyncio.sleep(3)
+            await asyncio.sleep(random.randint(1, 7))
             get = await prmptgrd(data['text'])
             if get == 1:
               if 'llama-3.1-8b-instant' not in notam:
-                async with aiohttp.ClientSession() as sess:
-                    async with sess.post('https://image-gen.uttgu-901.workers.dev/', headers=one, json=two, timeout=60) as pos1t:
-                        if pos1t.status == 200:
-                            image_bytes = await pos1t.read()
-                            dayreqgen += 1
-                            rpts += 1
-                            try:
-                              ipis[str(client_ip)] += 1
-                              reqts[str(client_ip)] += 1
-                              zaponhour += 1
-                            except:
-                              pass
-                            return image_bytes, 200, {'Content-Type': 'image/png'}
-                        else:
-                            error_text = await pos1t.text()
-                            print(f"Photo API error: {pos1t.status} - {error_text}")
-                            return 'Простите, произошла ошибка при генерации.', 400
+                if time.time() - servs[str(client_ip)]['time'] > 1:
+                  async with aiohttp.ClientSession() as sess:
+                      async with sess.post('https://image-gen.uttgu-901.workers.dev/', headers=one, json=two, timeout=60) as pos1t:
+                          if pos1t.status == 200:
+                              image_bytes = await pos1t.read()
+                              dayreqgen += 1
+                              rpts += 1
+                              servs[str(client_ip)]['time'] = time.time()
+                              try:
+                                ipis[str(client_ip)] += 1
+                                reqts[str(client_ip)] += 1
+                                zaponhour += 1
+                              except:
+                                pass
+                              return image_bytes, 200, {'Content-Type': 'image/png'}
+                          else:
+                              error_text = await pos1t.text()
+                              servs[str(client_ip)]['time'] = time.time()
+                              print(f"Photo API error: {pos1t.status} - {error_text}")
+                              try:
+                                ipis[str(client_ip)] += 1
+                                reqts[str(client_ip)] += 1
+                                zaponhour += 1
+                              except:
+                                pass
+                              return 'Простите, произошла ошибка при генерации.', 400
+                else:
+                  servs[str(client_ip)]['time'] = time.time()
+                  try:
+                    ipis[str(client_ip)] += 1
+                    reqts[str(client_ip)] += 1
+                    zaponhour += 1
+                  except:
+                    pass
+                  return 'Ошибка при генерации.', 400
               else:
                 return 'Модель временно недоступна. Попробуйте повторить генерацию через минуту.', 400
             elif get == 2:
@@ -1928,7 +2481,7 @@ async def genph():
 
 @app.route('/math', methods=['POST'])
 async def match():
-        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis
+        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
         user_agent = request.headers.get('User-Agent', '')
         origin = request.headers.get('Origin', '')
         referer = request.headers.get('Referer', '')
@@ -1937,15 +2490,19 @@ async def match():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
-        if zaponhour > 3999:
+        client = x_forwarded_for
+        if zaponhour > 5999:
           servers = False
-        if client_ip not in reqts:
+          url = ''
+        if str(client_ip) not in reqts:
           reqts[str(client_ip)] = 0
+        if str(client_ip) not in servs:
+          servs[str(client_ip)] = {'time': 0}
         ipy = await getip(client_ip)
         if reqts[str(client_ip)] > 10:
-          bansipis.apppend(str(client_ip))
+          bansipis.append(str(client_ip))
         if servers == False:
-          return 'Простите, сервера выключены для безопасности.'
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         # Смягчаем проверки для локальной разработки
@@ -1953,8 +2510,8 @@ async def match():
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
-        if rpts > 7:
-          return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
+        if rpts > 15:
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) not in ipis:
@@ -1989,23 +2546,41 @@ async def match():
                         if get == 1:
                           if 'llama-3.1-8b-instant' not in notam:
                             await asyncio.sleep(random.randint(1, 7))
-                            async with aiohttp.ClientSession() as sess:
-                                async with sess.post('https://api.groq.com/openai/v1/chat/completions', headers=one, json=two) as pos:
-                                    if pos.status == 200:
-                                        pos_json = await pos.json()
-                                        pos_text = pos_json['choices'][0]['message']['content']
-                                        dayreq += 1
-                                        rpts += 1
-                                        try:
-                                          ipis[str(client_ip)] += 1
-                                          reqts[str(client_ip)] += 1
-                                          zaponhour += 1
-                                        except:
-                                          pass
-                                        return pos_text, 200
-                                    else:
-                                        notam.append('llama-3.1-8b-instant')
-                                        return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
+                            if time.time() - servs[str(client_ip)]['time'] > 1:
+                              async with aiohttp.ClientSession() as sess:
+                                  async with sess.post(url, headers=one, json=two) as pos:
+                                      if pos.status == 200:
+                                          pos_json = await pos.json()
+                                          pos_text = pos_json['choices'][0]['message']['content']
+                                          dayreq += 1
+                                          rpts += 1
+                                          servs[str(client_ip)]['time'] = time.time()
+                                          try:
+                                            ipis[str(client_ip)] += 1
+                                            reqts[str(client_ip)] += 1
+                                            zaponhour += 1
+                                          except:
+                                            pass
+                                          return pos_text, 200
+                                      else:
+                                          notam.append('llama-3.1-8b-instant')
+                                          servs[str(client_ip)]['time'] = time.time()
+                                          try:
+                                            ipis[str(client_ip)] += 1
+                                            reqts[str(client_ip)] += 1
+                                            zaponhour += 1
+                                          except:
+                                            pass
+                                          return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
+                            else:
+                              servs[str(client_ip)]['time'] = time.time()
+                              try:
+                                ipis[str(client_ip)] += 1
+                                reqts[str(client_ip)] += 1
+                                zaponhour += 1
+                              except:
+                                pass
+                              return 'Ошибка при генерации.', 400
                           else:
                             return 'Модель временно недоступна. Попробуйте повторить генерацию через минуту.', 400
                         elif get == 2:
@@ -2022,7 +2597,7 @@ async def match():
 
 @app.route('/profi', methods=['POST'])
 async def profi():
-        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis
+        global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam, proreq, lastlstmgen, lstmgen, potoks
         user_agent = request.headers.get('User-Agent', '')
         origin = request.headers.get('Origin', '')
         referer = request.headers.get('Referer', '')
@@ -2031,15 +2606,19 @@ async def profi():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         client_ip = x_forwarded_for
-        if zaponhour > 3999:
-          servers = False
+        client = x_forwarded_for
+        if zaponhour > 5999:
+          servers = False 
+          url = ''
         if servers == False:
-          return 'Простите, сервера выключены для безопасности.'
-        if client_ip not in reqts:
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
+        if str(client_ip) not in reqts:
           reqts[str(client_ip)] = 0
+        if str(client_ip) not in servs:
+          servs[str(client_ip)] = {'time': 0}
         ipy = await getip(client_ip)
         if reqts[str(client_ip)] > 10:
-          bansipis.apppend(str(client_ip))
+          bansipis.append(str(client_ip))
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         # Смягчаем проверки для локальной разработки
@@ -2047,13 +2626,12 @@ async def profi():
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
-        if rpts > 7:
-          return 'Простите, сработала квота RPTS. Попробуйте через 10 секунд.', 503
+        if rpts >  15:
+          return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) not in ipis:
           ipis[str(client_ip)] = 0
-        url = 'https://api.groq.com/openai/v1/chat/completions'
         try:
             data = await request.get_json()
             if 'text' in data and 'api' in data and 'dialog' in data and 'user' in data and 'parol' in data and 'model' in data:
@@ -2072,6 +2650,12 @@ async def profi():
                                   model = 'llama-3.3-70b-versatile'
                                 elif data['model'] == 'Qwen-3 32B':
                                   model = 'qwen/qwen3-32b'
+                                elif data['model'] == 'MagicText-1.2 1M':
+                                  model = 'RadmirRyan/MagicText-1.2'
+                                elif data['model'] == 'LLaMA-3.1 8B':
+                                  model = 'llama-3.1-8b-instant'
+                                elif data['model'] == 'LLaMA-4 Scout':
+                                  model = 'meta-llama/llama-4-scout-17b-16e-instruct'
                                 else:
                                   model = 'llama-3.1-8b-instant'
                                 one = {
@@ -2095,38 +2679,84 @@ async def profi():
                                 }
                                 get = await prmptgrd(data['text'])
                                 if get == 1:
+                                  if model == 'RadmirRyan/MagicText-1.2':
+                                    if time.time() - servs[str(client_ip)]['time'] > 2:
+                                      if time.time() - lastlstmgen < 5:
+                                        return 'Простите. Лимиты для модели MagicText исчерпаны в течении пяти секунд.', 400
+                                      if lstmgen > 99:
+                                        return 'Лимиты для модели MagicText исчерпаны до завтра. Используйте наши другие модели - https://nai-chat.onrender.com/models', 400
+                                      if potoks >= 4:
+                                        return 'Простите, но общее число потоков (4) не позволяет запустить генерацию для модели MagicText. Подождите, пока поток освободится.', 400
+                                      try:
+                                        potoks += 1
+                                        try:
+                                          text = await asyncio.to_thread(generation, data['text'])
+                                        except:
+                                          potoks -= 1
+                                          return 'Произошла ошибка при генерации. Повторите попытку позже.', 400
+                                        post_text = {
+                                          'think': 'Данная модель помечена знаком (❗) в связи с низким качеством генерации. Пожалуйста, проверяйте качество текста перед тем, как слушать ее совет. Подробнее о моделях - https://nai-chat.onrender.com/models',
+                                          'mes': text
+                                        }
+                                        lstmgen += 1
+                                        lastlstmgen = time.time()
+                                        potoks -= 1
+                                        return post_text, 200
+                                      except:
+                                        return 'Произошла ошибка при генерации.', 400
+                                    else:
+                                      return 'Простите, но для MagicText действуют ограничения. Попробуйте через две секунды.', 400
+
                                   if model not in notam:
                                     await asyncio.sleep(random.randint(1, 3))
-                                    async with aiohttp.ClientSession() as sess:
-                                        async with sess.post(url, headers=one, json=two) as pos:
-                                            if pos.status == 200:
-                                                pos_json = await pos.json()
-                                                pos_text = pos_json['choices'][0]['message']['content']
-                                                proreq += 1
-                                                rpts += 1
-                                                try:
-                                                  ipis[str(client_ip)] += 1
-                                                  zaponhour += 1
-                                                  reqts[str(client_ip)] += 1
-                                                except:
-                                                  pass
-                                                if model == 'qwen/qwen3-32b':
-                                                    pos_text = pos_text.split('</think>')
-                                                    pos_t1 = pos_text[0].replace('<think>', '').strip()
-                                                    pos_t2 = pos_text[1].strip()
-                                                    post_text = {
-                                                      'think': pos_t1,
-                                                      'mes': pos_t2
-                                                    }
-                                                else:
-                                                    post_text = {
-                                                      'think': 'Простите, данная модель не поддерживает рассуждение. Использйте Qwen-3 32B, которая оффициально поддерживатеся.',
-                                                      'mes': pos_text
-                                                    }
-                                                return post_text, 200
-                                            else:
-                                                notam.append(model)
-                                                return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
+                                    if time.time() - servs[str(client_ip)]['time'] > 1 and model not in notam:
+                                      async with aiohttp.ClientSession() as sess:
+                                          async with sess.post(url, headers=one, json=two) as pos:
+                                              if pos.status == 200:
+                                                  pos_json = await pos.json()
+                                                  pos_text = pos_json['choices'][0]['message']['content']
+                                                  proreq += 1
+                                                  servs[str(client_ip)]['time'] = time.time()
+                                                  rpts += 1
+                                                  try:
+                                                    ipis[str(client_ip)] += 1
+                                                    zaponhour += 1
+                                                    reqts[str(client_ip)] += 1
+                                                  except:
+                                                    pass
+                                                  if model == 'qwen/qwen3-32b':
+                                                      pos_text = pos_text.split('</think>')
+                                                      pos_t1 = pos_text[0].replace('<think>', '').strip()
+                                                      pos_t2 = pos_text[1].strip()
+                                                      post_text = {
+                                                        'think': pos_t1,
+                                                        'mes': pos_t2
+                                                      }
+                                                  else:
+                                                      post_text = {
+                                                        'think': 'Простите, данная модель не поддерживает рассуждение. Использйте Qwen-3 32B в каталоге моделей. Подробнее о моделях - https://nai-chat.onrender.com/models',
+                                                        'mes': pos_text
+                                                      }
+                                                  return post_text, 200
+                                              else:
+                                                  notam.append(model)
+                                                  servs[str(client_ip)]['time'] = time.time()
+                                                  try:
+                                                    ipis[str(client_ip)] += 1
+                                                    reqts[str(client_ip)] += 1
+                                                    zaponhour += 1
+                                                  except:
+                                                    pass
+                                                  return 'Произошла ошибка при генерации. Пожалуйста, подождите чуть-чуть.', 400
+                                    else:
+                                      servs[str(client_ip)]['time'] = time.time()
+                                      try:
+                                        ipis[str(client_ip)] += 1
+                                        reqts[str(client_ip)] += 1
+                                        zaponhour += 1
+                                      except:
+                                        pass
+                                      return'Простите, произошла ошибка при генерации.', 400                                  
                                   else:
                                     return 'Модель временно недоступна. Попробуйте повторить генерацию через минуту.', 400
                                 elif get == 2:
@@ -2146,10 +2776,14 @@ async def profi():
             return 'Ошибка обработки вашего запроса. 105', 400
 @app.route('/reg', methods=['POST'])
 async def profujyfi():
+    global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, notam, url
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
-    if client_ip not in reqts:
-      reqts[str(client_ip)] = 0
+    if str(client) not in servs:
+      servs[str(client)] = {'time': 0}
+    servs[str(client)]['time'] = time.time()
+    if str(client) not in reqts:
+      reqts[str(client)] = 0
     ipy = await getip(client)
     if ipy == 2:
       return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2157,7 +2791,7 @@ async def profujyfi():
         ipis[str(client)] = 0
     try:
         ipis[str(client)] += 1
-        reqts[str(client_ip)] += 1
+        reqts[str(client)] += 1
     except:
         pass
     if str(client) in bansipis:
@@ -2180,10 +2814,14 @@ async def profujyfi():
 
 @app.route('/regcheck', methods=['POST'])
 async def profujyfiesth():
+    global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, notam, url
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
-    if client_ip not in reqts:
-      reqts[str(client_ip)] = 0
+    if str(client) not in reqts:
+      reqts[str(client)] = 0
+    if str(client) not in servs:
+      servs[str(client)] = {'time': 0}
+    servs[str(client)]['time'] = time.time()
     ipy = await getip(client)
     if ipy == 2:
         return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2191,7 +2829,7 @@ async def profujyfiesth():
         ipis[str(client)] = 0
     try:
         ipis[str(client)] += 1
-        reqts[str(client_ip)] += 1
+        reqts[str(client)] += 1
     except:
         pass
     if str(client) in bansipis:
@@ -2213,8 +2851,12 @@ async def profujyfiesth():
         return 'Ошибка обработки запроса.', 400
 @app.route('/limit')
 async def limits():
+    global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, notam, url
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
+    if str(client) not in servs:
+      servs[str(client)] = {'time': 0}
+    servs[str(client)]['time'] = time.time()
     if str(client) not in ipis:
         ipis[str(client)] = 0
     try:
@@ -2226,8 +2868,12 @@ async def limits():
     return f'Chat-not-pro {dayreq}, generation-photo {dayreqgen}, pro mode {proreq}', 200
 @app.route('/health')
 async def kuhu():
+    global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, notam, url
     x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
     client = x_forwarded_for
+    if str(client) not in servs:
+      servs[str(client)] = {'time': 0}
+    servs[str(client)]['time'] = time.time()
     if str(client) not in ipis:
         ipis[str(client)] = 0
     try:
@@ -2248,5 +2894,6 @@ if __name__ == '__main__':
         asyncio.create_task(rptsts())
         asyncio.create_task(hour())
         asyncio.create_task(ddosanti())
+        asyncio.create_task(hoii())
         await app.run_task(host='0.0.0.0', port=10000)
     asyncio.run(main())
