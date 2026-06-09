@@ -1,8 +1,6 @@
 from quart import Quart, request, jsonify, Response
 import asyncio
 import aiohttp
-import torch
-import torch.nn as nn
 from datetime import timezone, timedelta
 import datetime
 import random
@@ -12,48 +10,11 @@ import time
 lastlstmgen = 0
 lstmgen = 0
 potoks = 0
-itw = {0: '\t', 1: ' ', 2: '!', 3: '"', 4: '#', 5: '$', 6: '%', 7: '(', 8: ')', 9: '*', 10: '+', 11: ',', 12: '-', 13: '.', 14: '/', 15: '0', 16: '1', 17: '2', 18: '3', 19: '4', 20: '5', 21: '6', 22: '7', 23: '8', 24: '9', 25: ':', 26: ';', 27: '=', 28: '>', 29: '?', 30: 'A', 31: 'B', 32: 'C', 33: 'D', 34: 'E', 35: 'F', 36: 'G', 37: 'H', 38: 'I', 39: 'J', 40: 'K', 41: 'L', 42: 'M', 43: 'N', 44: 'O', 45: 'P', 46: 'Q', 47: 'R', 48: 'S', 49: 'T', 50: 'U', 51: 'V', 52: 'W', 53: 'X', 54: 'Y', 55: 'Z', 56: '[', 57: ']', 58: '_', 59: 'a', 60: 'b', 61: 'c', 62: 'd', 63: 'e', 64: 'f', 65: 'g', 66: 'h', 67: 'i', 68: 'j', 69: 'k', 70: 'l', 71: 'm', 72: 'n', 73: 'o', 74: 'p', 75: 'q', 76: 'r', 77: 's', 78: 't', 79: 'u', 80: 'v', 81: 'w', 82: 'x', 83: 'y', 84: 'z', 85: '«', 86: '°', 87: '»', 88: 'Á', 89: 'É', 90: 'Í', 91: 'Ó', 92: 'Ö', 93: 'Ú', 94: 'Ü', 95: 'à', 96: 'á', 97: 'â', 98: 'ä', 99: 'ç', 100: 'è', 101: 'é', 102: 'ê', 103: 'í', 104: 'î', 105: 'ï', 106: 'ó', 107: 'ô', 108: 'ö', 109: 'ù', 110: 'ú', 111: 'ü', 112: 'ý', 113: 'Ő', 114: 'ő', 115: 'œ', 116: 'Ű', 117: 'ű', 118: '́', 119: 'Ё', 120: 'А', 121: 'Б', 122: 'В', 123: 'Г', 124: 'Д', 125: 'Е', 126: 'Ж', 127: 'З', 128: 'И', 129: 'Й', 130: 'К', 131: 'Л', 132: 'М', 133: 'Н', 134: 'О', 135: 'П', 136: 'Р', 137: 'С', 138: 'Т', 139: 'У', 140: 'Ф', 141: 'Х', 142: 'Ц', 143: 'Ч', 144: 'Ш', 145: 'Щ', 146: 'Ы', 147: 'Ь', 148: 'Э', 149: 'Ю', 150: 'Я', 151: 'а', 152: 'б', 153: 'в', 154: 'г', 155: 'д', 156: 'е', 157: 'ж', 158: 'з', 159: 'и', 160: 'й', 161: 'к', 162: 'л', 163: 'м', 164: 'н', 165: 'о', 166: 'п', 167: 'р', 168: 'с', 169: 'т', 170: 'у', 171: 'ф', 172: 'х', 173: 'ц', 174: 'ч', 175: 'ш', 176: 'щ', 177: 'ъ', 178: 'ы', 179: 'ь', 180: 'э', 181: 'ю', 182: 'я', 183: 'ё', 184: '\u200b', 185: '‑', 186: '–', 187: '—', 188: '‘', 189: '’', 190: '“', 191: '”', 192: '„', 193: '•', 194: '…', 195: '™', 196: '←', 197: '→', 198: '⚠', 199: '⚡', 200: '✅', 201: '利', 202: '顺', 203: '️', 204: '🆓', 205: '🇷', 206: '🇺', 207: '🌍', 208: '🎯', 209: '🏆', 210: '💡', 211: '💰', 212: '📊', 213: '📍', 214: '📝', 215: '📞', 216: '📱', 217: '📲', 218: '🔄', 219: '🔍', 220: '🔓', 221: '🔧', 222: '🚀', 223: '🚨', 224: '🛠', 225: '🛡', 226: '🤔', 227: '🥇', 228: '🥈', 229: '🥉'}
-wti = {'\t': 0, ' ': 1, '!': 2, '"': 3, '#': 4, '$': 5, '%': 6, '(': 7, ')': 8, '*': 9, '+': 10, ',': 11, '-': 12, '.': 13, '/': 14, '0': 15, '1': 16, '2': 17, '3': 18, '4': 19, '5': 20, '6': 21, '7': 22, '8': 23, '9': 24, ':': 25, ';': 26, '=': 27, '>': 28, '?': 29, 'A': 30, 'B': 31, 'C': 32, 'D': 33, 'E': 34, 'F': 35, 'G': 36, 'H': 37, 'I': 38, 'J': 39, 'K': 40, 'L': 41, 'M': 42, 'N': 43, 'O': 44, 'P': 45, 'Q': 46, 'R': 47, 'S': 48, 'T': 49, 'U': 50, 'V': 51, 'W': 52, 'X': 53, 'Y': 54, 'Z': 55, '[': 56, ']': 57, '_': 58, 'a': 59, 'b': 60, 'c': 61, 'd': 62, 'e': 63, 'f': 64, 'g': 65, 'h': 66, 'i': 67, 'j': 68, 'k': 69, 'l': 70, 'm': 71, 'n': 72, 'o': 73, 'p': 74, 'q': 75, 'r': 76, 's': 77, 't': 78, 'u': 79, 'v': 80, 'w': 81, 'x': 82, 'y': 83, 'z': 84, '«': 85, '°': 86, '»': 87, 'Á': 88, 'É': 89, 'Í': 90, 'Ó': 91, 'Ö': 92, 'Ú': 93, 'Ü': 94, 'à': 95, 'á': 96, 'â': 97, 'ä': 98, 'ç': 99, 'è': 100, 'é': 101, 'ê': 102, 'í': 103, 'î': 104, 'ï': 105, 'ó': 106, 'ô': 107, 'ö': 108, 'ù': 109, 'ú': 110, 'ü': 111, 'ý': 112, 'Ő': 113, 'ő': 114, 'œ': 115, 'Ű': 116, 'ű': 117, '́': 118, 'Ё': 119, 'А': 120, 'Б': 121, 'В': 122, 'Г': 123, 'Д': 124, 'Е': 125, 'Ж': 126, 'З': 127, 'И': 128, 'Й': 129, 'К': 130, 'Л': 131, 'М': 132, 'Н': 133, 'О': 134, 'П': 135, 'Р': 136, 'С': 137, 'Т': 138, 'У': 139, 'Ф': 140, 'Х': 141, 'Ц': 142, 'Ч': 143, 'Ш': 144, 'Щ': 145, 'Ы': 146, 'Ь': 147, 'Э': 148, 'Ю': 149, 'Я': 150, 'а': 151, 'б': 152, 'в': 153, 'г': 154, 'д': 155, 'е': 156, 'ж': 157, 'з': 158, 'и': 159, 'й': 160, 'к': 161, 'л': 162, 'м': 163, 'н': 164, 'о': 165, 'п': 166, 'р': 167, 'с': 168, 'т': 169, 'у': 170, 'ф': 171, 'х': 172, 'ц': 173, 'ч': 174, 'ш': 175, 'щ': 176, 'ъ': 177, 'ы': 178, 'ь': 179, 'э': 180, 'ю': 181, 'я': 182, 'ё': 183, '\u200b': 184, '‑': 185, '–': 186, '—': 187, '‘': 188, '’': 189, '“': 190, '”': 191, '„': 192, '•': 193, '…': 194, '™': 195, '←': 196, '→': 197, '⚠': 198, '⚡': 199, '✅': 200, '利': 201, '顺': 202, '️': 203, '🆓': 204, '🇷': 205, '🇺': 206, '🌍': 207, '🎯': 208, '🏆': 209, '💡 💡': 210, '💰': 211, '📊': 212, '📍': 213, '📝': 214, '📞': 215, '📱': 216, '📲': 217, '🔄': 218, '🔍': 219, '🔓': 220, '🔧': 221, '🚀': 222, '🚨': 223, '🛠': 224, '🛡': 225, '🤔': 226, '🥇': 227, '🥈': 228, '🥉': 229}
-class AI(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.embai = nn.Embedding(230, 256)
-        self.lsai = nn.LSTM(256, 512, batch_first=True, dropout=0.3, num_layers=1)
-        self.linai = nn.Linear(512, 230)
 
-    def forward(self, x):
-        x = self.embai(x)
-        if x.dim() == 2:
-            x = x.unsqueeze(0)
-        x, _ = self.lsai(x)
-        x = x[:, -1, :]
-        x = self.linai(x)
-        return x
-model = AI()
-model.load_state_dict(torch.load('model.pth', map_location='cpu'))
-model.eval()
-def generation(text):
-  text = list(text)
-  ss = []
-  for i in text:
-    try:
-      ss.append(wti[i])
-    except:
-      ss.append(wti[' '])
-  for i in range(25):
-    sss = torch.tensor(ss)
-    otv = model(sss)
-    otv = torch.argmax(otv, dim=1).item()
-    ss.append(otv)
-    ss = ss[-128:]
-  txtx = ''
-  for i in ss:
-    try:
-      txtx += itw[i]
-    except:
-      pass
-  return txtx
-
+rpts = 0
+dayreq = 0
+dayreqgen = 0
+proreq = 0
 
 url = 'https://api.groq.com/openai/v1/chat/completions'
 servs = {
@@ -91,7 +52,7 @@ async def rptsts():
           reqts[i] = 0
       except:
         pass
-    await asyncio.sleep(20)
+    await asyncio.sleep(17)
 
 async def modelscheck():
   global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
@@ -118,7 +79,7 @@ async def modelscheck():
             'temperature': 0.7
         }
         async with aiohttp.ClientSession() as s:
-          async with s.post('', headers=one, json=two) as pos:
+          async with s.post('https://api.groq.com/openai/v1/chat/completions', headers=one, json=two) as pos:
             if pos.status == 200:
               notam.remove(i)
     else:
@@ -144,10 +105,6 @@ async def ipischeck():
       if ipis[i] > 299:
         bansipis.append(i)
     await asyncio.sleep(600)
-rpts = 0
-dayreq = 0
-dayreqgen = 0
-proreq = 0
 async def rptd():
   global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
   while True:
@@ -208,7 +165,7 @@ users = {}
 app = Quart(__name__)
 
 async def nolim():
-    global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam, banforewer, lstmgen
+    global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam, banforewer, lstmgen, dayreqgen
     while True:
         dayreq = 0
         dayreqgen = 0
@@ -231,6 +188,15 @@ async def ddosanti():
                 pass
         print(f'Принять действия - {bansipis}')
         await asyncio.sleep(86400)
+
+async def clearmem():
+  global dayreq, rpts, zaponhour, servers, bansipis, reqts, ipis, servs, url, notam
+  while True:
+        banforewer = []
+        bansipis = []
+        reqts = {}
+        notam = []
+        await asyncio.sleep(2628000)
 
 async def ping_server():
     url = "https://nai-chat.onrender.com"
@@ -392,7 +358,7 @@ async def hedfkbnl():
             <li>Мы вас просим ввести данные вашей карты? Нет.</li>
         </ul>
         
-        <p>Мы  <a href="#">никогда</a> не будем брать плату за наши услуги.</p>
+        <p>Обратите <a href="#">внимание:</a> под названием ChatGPT скрывается GPT-OSS. Мы сократили название, так как оригинальное название будет длинное.</p>
         
         <hr>
     </div>
@@ -819,25 +785,6 @@ async def kejghjkler():
                 </div>
             </div>
         </div>
-        <div class="glass-card">
-            <div class="card-header">
-                <span class="model-name">MagicText-1.2 1M</span>
-                <span class="version">LSTM</span>
-            </div>
-            <div class="content">
-                <div class="desc">Самая устойчивая наша модель, которая не сломается просто так. Развернута у нас. Модель помечена статусом ‼️. Относитесь к ответам осторожно, так как модель находится на начальной стадии тесторивания.</div>
-                <ul class="spec-list">
-                    <li><span class="spec-label">Автор</span><span class="spec-value">RadmirRyan</span></li>
-                    <li><span class="spec-label">Добавлена</span><span class="spec-value">01.05.2026</span></li>
-                    <li><span class="spec-label">Статус</span><span class="spec-value">‼️</span></li>
-                    <li><span class="spec-label">Конец поддержки</span><span class="spec-value">Не планируется.</span></li>
-                </ul>
-                <div class="tech-badge">
-                    <span class="tech">NoErrors</span>
-                    <span class="tech">Hahaha-model</span>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -856,7 +803,7 @@ async def gbREB():
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#f5f5f7">
+  <meta name="theme-color" content="#0a0a0f">
   <meta name="google" content="notranslate">
   <title>nGix AI</title>
   <style>
@@ -879,37 +826,40 @@ async def gbREB():
     }
 
     .chat-static-footer {
-      background-color: var(--container-primary-fill);
+      background-color: rgba(18, 18, 24, 0.8);
+      backdrop-filter: blur(16px);
       padding: 8px 32px;
       font-size: 12px;
       font-weight: 400;
       line-height: 15px;
       text-align: center;
-      color: var(--character-tertiary-text);
+      color: #8e8fa8;
       z-index: 999;
       width: 100%;
       box-sizing: border-box;
       flex-shrink: 0;
+      border-top: 1px solid rgba(97, 92, 237, 0.25);
     }
 
     .chat-static-footer .footer-link {
       text-decoration: underline;
       text-align: center;
-      color: #1d1d20;
+      color: #a5a0ff;
       cursor: pointer;
     }
 
     html.dark .chat-static-footer .footer-link {
-      color: #caccd9;
+      color: #b8b4ff;
     }
 
     .header-desktop-static {
-      background: var(--container-primary-bgweb);
+      background: rgba(10, 10, 16, 0.85);
+      backdrop-filter: blur(20px);
       flex-shrink: 0;
       padding: 12px 20px;
       width: 100%;
       z-index: 100;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid rgba(97, 92, 237, 0.3);
     }
 
     .header-desktop-static .header-content {
@@ -932,13 +882,14 @@ async def gbREB():
       position: absolute;
       top: 40px;
       left: 0;
-      background: var(--input-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
+      background: rgba(18, 18, 28, 0.96);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(97, 92, 237, 0.4);
+      border-radius: 20px;
       overflow: hidden;
       min-width: 180px;
       z-index: 1000;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
       display: none;
     }
 
@@ -952,8 +903,8 @@ async def gbREB():
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
-      color: var(--text-primary);
-      border-bottom: 1px solid var(--border-color);
+      color: #f0f0ff;
+      border-bottom: 1px solid rgba(97, 92, 237, 0.2);
     }
 
     .model-item:last-child {
@@ -961,7 +912,7 @@ async def gbREB():
     }
 
     .model-item:hover {
-      background: rgba(97, 92, 237, 0.15);
+      background: rgba(97, 92, 237, 0.25);
     }
 
     .header-desktop-static .header-right {
@@ -980,7 +931,7 @@ async def gbREB():
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: var(--container-primary-bgweb);
+      background: #0a0a0f;
       width: 100%;
       height: 100%;
     }
@@ -1006,6 +957,8 @@ async def gbREB():
 
     .welcome-block {
       text-align: center;
+      position: relative;
+      z-index: 3;
     }
 
     .welcome-text {
@@ -1014,13 +967,14 @@ async def gbREB():
       line-height: 40px;
       text-align: center;
       letter-spacing: normal;
-      color: #2c2c36;
+      color: #ececf4;
       max-width: 688px;
       margin: 0 auto;
       min-height: 80px;
       display: flex;
       align-items: center;
       justify-content: center;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
 
     .typing-cursor {
@@ -1047,6 +1001,7 @@ async def gbREB():
       max-width: 800px;
       margin: 0 auto;
       position: relative;
+      z-index: 3;
     }
 
     .layout-with-messages {
@@ -1095,13 +1050,12 @@ async def gbREB():
 
     .message-bot {
       align-self: flex-start;
-      background: var(--input-bg);
+      background: #1e1e2a;
       border-bottom-left-radius: 4px;
-      border-left: 2px solid #615ced;
-      color: var(--text-primary);
+      border-left: 2px solid #7c77ff;
+      color: #eaeefc;
     }
 
-    /* Новый стиль: сообщение бота с кнопкой Рассуждение */
     .message-bot.think-message-wrapper {
       padding: 0;
       background: transparent;
@@ -1113,35 +1067,35 @@ async def gbREB():
       flex-direction: column;
     }
     .bot-message-content {
-      background: var(--input-bg);
+      background: #1e1e2a;
       padding: 10px 16px;
       border-radius: 18px;
       border-bottom-left-radius: 4px;
-      border-left: 2px solid #615ced;
-      color: var(--text-primary);
+      border-left: 2px solid #7c77ff;
+      color: #eaeefc;
       margin-bottom: 6px;
     }
     .think-toggle-btn {
-      background: rgba(97, 92, 237, 0.12);
+      background: rgba(124, 119, 255, 0.2);
       border: none;
       border-radius: 20px;
       padding: 5px 12px;
       font-size: 11px;
       font-weight: 500;
-      color: #615ced;
+      color: #b0abff;
       cursor: pointer;
       width: fit-content;
       transition: all 0.2s ease;
       margin-top: 2px;
     }
     .think-toggle-btn:hover {
-      background: rgba(97, 92, 237, 0.25);
+      background: rgba(124, 119, 255, 0.35);
     }
     .think-hidden-text {
       display: none;
       margin-top: 8px;
-      background: #2c3e66;
-      color: #e0e7ff;
+      background: #1a1f2e;
+      color: #cbd5ff;
       padding: 8px 12px;
       border-radius: 14px;
       font-size: 12px;
@@ -1150,7 +1104,7 @@ async def gbREB():
       font-style: italic;
     }
     html.dark .think-hidden-text {
-      background: #1e2a4a;
+      background: #111827;
       color: #cbd5ff;
       border-left-color: #f0b429;
     }
@@ -1160,18 +1114,18 @@ async def gbREB():
 
     .message-error {
       border-left-color: #FF5E5E;
-      background: rgba(255, 94, 94, 0.1);
+      background: rgba(255, 94, 94, 0.15);
     }
 
     .typing-indicator {
       align-self: flex-start;
-      background: var(--input-bg);
+      background: #1e1e2a;
       border-radius: 18px;
       border-bottom-left-radius: 4px;
       padding: 10px 16px;
-      border-left: 2px solid #615ced;
+      border-left: 2px solid #7c77ff;
       font-size: 13px;
-      color: var(--text-secondary);
+      color: #b8bcdd;
     }
 
     .message-input-static {
@@ -1184,9 +1138,10 @@ async def gbREB():
     }
 
     .message-input-wrapper {
-      background: var(--input-bg);
+      background: rgba(30, 30, 40, 0.9);
+      backdrop-filter: blur(12px);
       border-radius: 32px;
-      border: 1px solid var(--border-color);
+      border: 1px solid rgba(124, 119, 255, 0.35);
       transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
       position: relative;
     }
@@ -1195,7 +1150,7 @@ async def gbREB():
       position: absolute;
       inset: -5px;
       border-radius: 38px;
-      background: radial-gradient(circle at 30% 50%, rgba(97,92,237,0.5), rgba(212,175,55,0.25), rgba(97,92,237,0.1) 80%);
+      background: radial-gradient(circle at 30% 50%, rgba(124,119,255,0.6), rgba(212,175,55,0.3), rgba(124,119,255,0.1) 80%);
       filter: blur(14px);
       opacity: 0;
       transition: opacity 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1);
@@ -1205,18 +1160,18 @@ async def gbREB():
     }
 
     .glow-effect.active {
-      opacity: 1;
+      opacity: 0.7;
       animation: smoothFloatGlow 3s infinite alternate ease-in-out;
     }
 
     @keyframes smoothFloatGlow {
       0% {
         transform: scale(0.97) translateY(0px);
-        background: radial-gradient(circle at 25% 45%, rgba(97,92,237,0.55), rgba(212,175,55,0.3), transparent 85%);
+        background: radial-gradient(circle at 25% 45%, rgba(124,119,255,0.65), rgba(212,175,55,0.35), transparent 85%);
       }
       100% {
         transform: scale(1.02) translateY(-2px);
-        background: radial-gradient(circle at 75% 55%, rgba(97,92,237,0.7), rgba(212,175,55,0.45), rgba(100,100,255,0.15) 90%);
+        background: radial-gradient(circle at 75% 55%, rgba(124,119,255,0.8), rgba(212,175,55,0.5), rgba(124,119,255,0.2) 90%);
       }
     }
 
@@ -1239,12 +1194,12 @@ async def gbREB():
       font-size: 16px;
       line-height: 24px;
       padding: 8px 0;
-      color: var(--text-primary);
+      color: #f0f0fc;
       font-family: inherit;
     }
 
     .message-input-textarea::placeholder {
-      color: var(--text-placeholder);
+      color: #7a7c9e;
     }
 
     .message-input-right-button {
@@ -1255,39 +1210,35 @@ async def gbREB():
     }
 
     .modes-btn {
-      background: transparent;
-      border: 1px solid #615ced;
+      background: rgba(124, 119, 255, 0.15);
+      border: 1px solid #7c77ff;
       border-radius: 20px;
       padding: 6px 14px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
-      color: #615ced;
-      background: rgba(97, 92, 237, 0.08);
+      color: #cbc8ff;
     }
 
     .modes-btn:hover {
-      background: rgba(97, 92, 237, 0.2);
+      background: rgba(124, 119, 255, 0.35);
       transform: scale(0.98);
-    }
-
-    html.dark .modes-btn {
-      background: rgba(97, 92, 237, 0.2);
-      color: #a5a0ff;
     }
 
     .modes-dropdown {
       position: absolute;
-      bottom: 50px;
-      left: 0;
-      background: var(--input-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
+      bottom: 100%;
+      right: 0;
+      margin-bottom: 8px;
+      background: rgba(18, 18, 28, 0.98);
+      backdrop-filter: blur(32px);
+      border: 1px solid rgba(124, 119, 255, 0.5);
+      border-radius: 20px;
       overflow: hidden;
-      min-width: 140px;
-      z-index: 1000;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      min-width: 150px;
+      z-index: 2000;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       display: none;
     }
 
@@ -1296,13 +1247,16 @@ async def gbREB():
     }
 
     .mode-item {
-      padding: 10px 16px;
-      font-size: 13px;
+      padding: 10px 18px;
+      font-size: 14px;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
-      color: var(--text-primary);
-      border-bottom: 1px solid var(--border-color);
+      color: #ecedff;
+      border-bottom: 1px solid rgba(124, 119, 255, 0.2);
+      background: rgba(20, 20, 30, 0.7);
+      text-align: center;
+      white-space: nowrap;
     }
 
     .mode-item:last-child {
@@ -1310,11 +1264,40 @@ async def gbREB():
     }
 
     .mode-item:hover {
-      background: rgba(97, 92, 237, 0.15);
+      background: rgba(124, 119, 255, 0.4);
+    }
+
+    @media (max-width: 640px) {
+      .modes-dropdown {
+        min-width: 130px;
+        right: -8px;
+      }
+      .mode-item {
+        padding: 8px 14px;
+        font-size: 13px;
+      }
+      .welcome-text {
+        font-size: 24px;
+        white-space: normal;
+        line-height: 1.3;
+        min-height: 60px;
+      }
+      .modes-btn {
+        padding: 4px 10px;
+        font-size: 11px;
+      }
+      .send-button {
+        width: 32px;
+        height: 32px;
+      }
+      .chat-messages-area {
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
+      }
     }
 
     .send-button {
-      background-color: #615ced;
+      background: linear-gradient(135deg, #7c77ff, #5a55d9);
       border: none;
       border-radius: 24px;
       width: 36px;
@@ -1375,102 +1358,75 @@ async def gbREB():
     }
 
     :root {
-      --container-primary-bgweb: #f5f5f7;
-      --character-primary-text: #1d1d20;
-      --character-tertiary-text: #8c8d9b;
-      --btn-link-text: #5f607a;
-      --container-transsecondary-fill: #e8e8ed;
-      --input-bg: #ffffff;
-      --border-color: #d4d4dc;
-      --text-primary: #1d1d20;
-      --text-placeholder: #a0a1b5;
+      --container-primary-bgweb: #0a0a0f;
+      --character-primary-text: #f0f0fc;
+      --character-tertiary-text: #8e8fa8;
+      --btn-link-text: #b8b4ff;
+      --container-transsecondary-fill: #1e1e2a;
+      --input-bg: #1a1a24;
+      --border-color: #2c2c3a;
+      --text-primary: #f0f0fc;
+      --text-placeholder: #6a6c8a;
     }
 
     html.dark {
-      --container-primary-bgweb: #1a1a1e;
-      --character-primary-text: #fafafc;
-      --character-tertiary-text: #8f91a8;
-      --btn-link-text: #caccd9;
-      --container-transsecondary-fill: #2a2a30;
-      --input-bg: #26262c;
-      --border-color: #3a3a44;
-      --text-primary: #fafafc;
-      --text-placeholder: #5a5c70;
+      --container-primary-bgweb: #0a0a0f;
+      --character-primary-text: #f0f0fc;
+      --character-tertiary-text: #8e8fa8;
+      --btn-link-text: #b8b4ff;
+      --container-transsecondary-fill: #1e1e2a;
+      --input-bg: #1a1a24;
+      --border-color: #2c2c3a;
+      --text-primary: #f0f0fc;
+      --text-placeholder: #6a6c8a;
     }
 
     html.dark {
-      background-color: #1a1a1e;
+      background-color: #0a0a0f;
     }
 
     body {
       margin: 0;
       height: 100%;
-      background-color: #f5f5f7;
+      background-color: #0a0a0f;
     }
 
     html {
       height: 100%;
     }
 
-    @media (max-width: 640px) {
-      .welcome-text {
-        font-size: 24px;
-        white-space: normal;
-        line-height: 1.3;
-        min-height: 60px;
-      }
-      .modes-btn {
-        padding: 4px 10px;
-        font-size: 11px;
-      }
-      .send-button {
-        width: 32px;
-        height: 32px;
-      }
-      .modes-dropdown {
-        bottom: 45px;
-        min-width: 120px;
-      }
-      .mode-item {
-        padding: 8px 12px;
-        font-size: 12px;
-      }
-      .glow-effect {
-        filter: blur(10px);
-        inset: -4px;
-      }
-      @keyframes flyAway {
-        0% {
-          transform: translate(0, 0) rotate(0deg);
-          opacity: 1;
-        }
-        100% {
-          transform: translate(60px, -50px) rotate(35deg);
-          opacity: 0;
-        }
-      }
-      /* Исправление скролла на телефонах */
-      .chat-messages-area {
-        -webkit-overflow-scrolling: touch;
-        overflow-y: auto;
-      }
+    .liquid-glass-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      background: radial-gradient(ellipse at 40% 20%, rgba(97,92,237,0.15), rgba(0,0,0,0.7) 70%);
+      backdrop-filter: blur(6px);
+    }
+
+    .home-page-static {
+      position: relative;
+      z-index: 2;
+      background: transparent;
     }
   </style>
 </head>
 <body>
 <div class="app" id="appRoot">
+  <div class="liquid-glass-bg"></div>
   <div class="home-page-static">
     <div class="header-desktop-static">
       <div class="header-content">
         <div class="header-left" id="headerModelBtn">
-          <div style="font-size: 18px; font-weight: 600; color: var(--character-primary-text);" id="modelDisplayName">nGix AI</div>
+          <div style="font-size: 18px; font-weight: 600; color: #ececf4;" id="modelDisplayName">nGix AI</div>
           <div id="proModelDropdown" class="model-dropdown-pro">
-            <div class="model-item" data-model="ChatGPT-20B">ChatGPT-20B</div>
-            <div class="model-item" data-model="ChatGPT-120B">ChatGPT-120B</div>
+            <div class="model-item" data-model="ChatGPT-20B">GPT-OSS 20B</div>
+            <div class="model-item" data-model="ChatGPT-120B">GPT-OSS 120B</div>
             <div class="model-item" data-model="LLaMA 3.3 70b">LLaMA 3.3 70b</div>
             <div class="model-item" data-model="Qwen-3 32B">Qwen-3 32B</div>
-            <div class="model-item" data-model="MagicText-1.2 1M">MagicText-1.2 1M</div>
-            <div class="model-item" data-model="LLaMA-3.1 8B">LLaMA-3.1 8B</div>
             <div class="model-item" data-model="LLaMA-4 Scout">LLaMA-4 Scout</div>
           </div>
         </div>
@@ -1484,6 +1440,7 @@ async def gbREB():
     <div class="chat-static-footer">
       <span>Мы не являемся мошенниками. </span>
       <span>Больше о безопасности: https://nai-chat.onrender.com/safe</span>
+      <span> Наши модели: https://nai-chat.onrender.com/models</span>
       <span> Открытый код: </span>
       <span>https://github.com/radmirryan-commits/nai-chat/blob/main</span>
     </div>
@@ -1494,7 +1451,7 @@ async def gbREB():
   (function() {
     function showBlockPage() {
       document.getElementById('appRoot').innerHTML = `
-        <div style="background-color: #1A1C1E; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
+        <div style="background-color: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
           <div style="max-width: 560px; width: 100%; text-align: center;">
             <div style="margin-bottom: 1.75rem; display: inline-flex; align-items: center; justify-content: center;">
               <div style="background: #D32F2F; border-radius: 28px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);">
@@ -1542,7 +1499,7 @@ async def gbREB():
     
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     let theme = localStorage.getItem('theme');
-    if (!theme) theme = prefersDark ? 'dark' : 'light';
+    if (!theme) theme = 'dark';
     const root = document.documentElement;
     if (theme === 'dark') root.classList.add('dark');
     else root.classList.remove('dark');
@@ -1780,6 +1737,11 @@ async def gbREB():
       return messagesArea;
     }
     
+    function closeModeDropdown() {
+      const dropdown = document.getElementById('modesDropdown');
+      if (dropdown) dropdown.classList.remove('active');
+    }
+    
     function bindInputEvents() {
       const textarea = document.getElementById('chatInput');
       const sendBtn = document.getElementById('sendMessageBtn');
@@ -1852,7 +1814,6 @@ async def gbREB():
       if (dropdown) dropdown.classList.remove('active');
     }
     
-    // addMessage с поддержкой Qwen: кнопка "Рассуждение"
     function addMessage(text, sender, isError = false, think = null) {
       if (!activeMessagesArea) {
         switchToChatMode();
@@ -1959,14 +1920,14 @@ async def gbREB():
       modal.style.left = '0';
       modal.style.width = '100%';
       modal.style.height = '100%';
-      modal.style.background = 'rgba(0,0,0,0.8)';
-      modal.style.backdropFilter = 'blur(8px)';
+      modal.style.background = 'rgba(0,0,0,0.85)';
+      modal.style.backdropFilter = 'blur(20px)';
       modal.style.zIndex = '2000';
       modal.style.display = 'flex';
       modal.style.alignItems = 'center';
       modal.style.justifyContent = 'center';
       modal.innerHTML = `
-        <div style="background: var(--input-bg); border-radius: 28px; max-width: 400px; width: 90%; border: 1px solid #D4AF37; overflow: hidden;">
+        <div style="background: rgba(16, 16, 24, 0.95); backdrop-filter: blur(16px); border-radius: 28px; max-width: 400px; width: 90%; border: 1px solid #7c77ff; overflow: hidden;">
           <div style="background: linear-gradient(135deg, #1A1F3A, #0B0D14); padding: 20px; text-align: center;">
             <h2 style="color: #D4AF37;">NAI PRO</h2>
             <p style="color: #A8B0D8;">Войдите или зарегистрируйтесь</p>
@@ -1974,20 +1935,20 @@ async def gbREB():
           <div style="padding: 25px;">
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
               <button id="authTabLogin" style="flex:1; padding: 10px; background: rgba(212,175,55,0.2); border: none; border-radius: 30px; color: #D4AF37; cursor: pointer;">Вход</button>
-              <button id="authTabReg" style="flex:1; padding: 10px; background: transparent; border: 1px solid var(--border-color); border-radius: 30px; color: var(--text-secondary); cursor: pointer;">Регистрация</button>
+              <button id="authTabReg" style="flex:1; padding: 10px; background: transparent; border: 1px solid #4a4c6a; border-radius: 30px; color: #bbbde5; cursor: pointer;">Регистрация</button>
             </div>
             <div id="authLoginForm">
-              <input type="text" id="loginUsername" placeholder="Логин" style="width:100%; padding: 14px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-primary); margin-bottom: 12px;">
-              <input type="password" id="loginPassword" placeholder="Пароль" style="width:100%; padding: 14px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-primary); margin-bottom: 16px;">
+              <input type="text" id="loginUsername" placeholder="Логин" style="width:100%; padding: 14px; background: #1e1e2c; border: 1px solid #3a3c54; border-radius: 16px; color: #f0f0fc; margin-bottom: 12px;">
+              <input type="password" id="loginPassword" placeholder="Пароль" style="width:100%; padding: 14px; background: #1e1e2c; border: 1px solid #3a3c54; border-radius: 16px; color: #f0f0fc; margin-bottom: 16px;">
               <button id="doLoginBtn" style="width:100%; background: linear-gradient(135deg, #D4AF37, #F5D97B); border: none; padding: 14px; border-radius: 30px; font-weight: bold; color: #1A1F3A; cursor: pointer;">Открыть PRO</button>
             </div>
             <div id="authRegForm" style="display: none;">
-              <input type="text" id="regUsername" placeholder="Логин" style="width:100%; padding: 14px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-primary); margin-bottom: 12px;">
-              <input type="password" id="regPassword" placeholder="Пароль" style="width:100%; padding: 14px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-primary); margin-bottom: 16px;">
+              <input type="text" id="regUsername" placeholder="Логин" style="width:100%; padding: 14px; background: #1e1e2c; border: 1px solid #3a3c54; border-radius: 16px; color: #f0f0fc; margin-bottom: 12px;">
+              <input type="password" id="regPassword" placeholder="Пароль" style="width:100%; padding: 14px; background: #1e1e2c; border: 1px solid #3a3c54; border-radius: 16px; color: #f0f0fc; margin-bottom: 16px;">
               <button id="doRegBtn" style="width:100%; background: linear-gradient(135deg, #D4AF37, #F5D97B); border: none; padding: 14px; border-radius: 30px; font-weight: bold; color: #1A1F3A; cursor: pointer;">Зарегистрироваться</button>
             </div>
             <div id="authMessage" style="color: #FF8A7A; font-size: 12px; margin-top: 12px; text-align: center;"></div>
-            <button id="closeAuthModal" style="width:100%; background: transparent; border: 1px solid var(--border-color); padding: 10px; border-radius: 30px; color: var(--text-secondary); cursor: pointer; margin-top: 12px;">Закрыть</button>
+            <button id="closeAuthModal" style="width:100%; background: transparent; border: 1px solid #5a5c7a; padding: 10px; border-radius: 30px; color: #bbbde5; cursor: pointer; margin-top: 12px;">Закрыть</button>
           </div>
         </div>
       `;
@@ -2296,7 +2257,7 @@ async def fhevoevn():
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) not in ipis:
           ipis[str(client_ip)] = 0
-        if rpts > 15:
+        if rpts > 25:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         try:
             data = await request.get_json()
@@ -2394,7 +2355,7 @@ async def genph():
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
-        if rpts > 15:
+        if rpts > 25:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         client_ip = x_forwarded_for
         client = x_forwarded_for
@@ -2510,7 +2471,7 @@ async def match():
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
-        if rpts > 15:
+        if rpts > 25:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2626,7 +2587,7 @@ async def profi():
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
-        if rpts >  15:
+        if rpts >  25:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         if str(client_ip) in bansipis:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
@@ -2650,10 +2611,6 @@ async def profi():
                                   model = 'llama-3.3-70b-versatile'
                                 elif data['model'] == 'Qwen-3 32B':
                                   model = 'qwen/qwen3-32b'
-                                elif data['model'] == 'MagicText-1.2 1M':
-                                  model = 'RadmirRyan/MagicText-1.2'
-                                elif data['model'] == 'LLaMA-3.1 8B':
-                                  model = 'llama-3.1-8b-instant'
                                 elif data['model'] == 'LLaMA-4 Scout':
                                   model = 'meta-llama/llama-4-scout-17b-16e-instruct'
                                 else:
@@ -2679,34 +2636,6 @@ async def profi():
                                 }
                                 get = await prmptgrd(data['text'])
                                 if get == 1:
-                                  if model == 'RadmirRyan/MagicText-1.2':
-                                    if time.time() - servs[str(client_ip)]['time'] > 2:
-                                      if time.time() - lastlstmgen < 5:
-                                        return 'Простите. Лимиты для модели MagicText исчерпаны в течении пяти секунд.', 400
-                                      if lstmgen > 99:
-                                        return 'Лимиты для модели MagicText исчерпаны до завтра. Используйте наши другие модели - https://nai-chat.onrender.com/models', 400
-                                      if potoks >= 4:
-                                        return 'Простите, но общее число потоков (4) не позволяет запустить генерацию для модели MagicText. Подождите, пока поток освободится.', 400
-                                      try:
-                                        potoks += 1
-                                        try:
-                                          text = await asyncio.to_thread(generation, data['text'])
-                                        except:
-                                          potoks -= 1
-                                          return 'Произошла ошибка при генерации. Повторите попытку позже.', 400
-                                        post_text = {
-                                          'think': 'Данная модель помечена знаком (❗) в связи с низким качеством генерации. Пожалуйста, проверяйте качество текста перед тем, как слушать ее совет. Подробнее о моделях - https://nai-chat.onrender.com/models',
-                                          'mes': text
-                                        }
-                                        lstmgen += 1
-                                        lastlstmgen = time.time()
-                                        potoks -= 1
-                                        return post_text, 200
-                                      except:
-                                        return 'Произошла ошибка при генерации.', 400
-                                    else:
-                                      return 'Простите, но для MagicText действуют ограничения. Попробуйте через две секунды.', 400
-
                                   if model not in notam:
                                     await asyncio.sleep(random.randint(1, 3))
                                     if time.time() - servs[str(client_ip)]['time'] > 1 and model not in notam:
@@ -2895,5 +2824,6 @@ if __name__ == '__main__':
         asyncio.create_task(hour())
         asyncio.create_task(ddosanti())
         asyncio.create_task(hoii())
+        asyncio.create_task(clearmem())
         await app.run_task(host='0.0.0.0', port=10000)
     asyncio.run(main())
