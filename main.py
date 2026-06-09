@@ -199,7 +199,7 @@ async def clearmem():
         await asyncio.sleep(2628000)
 
 async def ping_server():
-    url = "https://nai-chat.onrender.com"
+    url = "https://ngixai-chat.onrender.com"
     interval_seconds = 600
 
     async with aiohttp.ClientSession() as session:
@@ -1504,7 +1504,7 @@ async def gbREB():
     if (theme === 'dark') root.classList.add('dark');
     else root.classList.remove('dark');
     
-    const API_BASE = 'https://nai-chat.onrender.com';
+    const API_BASE = 'https://ngixai-chat.onrender.com';
     const TEXT_API_URL = API_BASE + '/generation';
     const MATH_API_URL = API_BASE + '/math';
     const PHOTO_API_URL = API_BASE + '/genphot';
