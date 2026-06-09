@@ -2233,7 +2233,7 @@ async def fhevoevn():
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         
         # Смягчаем проверки для локальной разработки, но оставляем для продакшена
-        if host and host != 'nai-chat.onrender.com' and host != '127.0.0.1:10000' and host != 'localhost:10000':
+        if host and host != 'ngixai-chat.onrender.com' and host != '127.0.0.1:10000' and host != 'localhost:10000':
             return 'Forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower() or 'aiohttp' in user_agent.lower():
             return '403', 403
@@ -2346,7 +2346,7 @@ async def genph():
         sec_fetch_site = request.headers.get('Sec-Fetch-Site', '')
         x_forwarded_for = request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
         # Смягчаем проверки для локальной разработки
-        if host and host != 'nai-chat.onrender.com' and host != '127.0.0.1:10000' and host != 'localhost:10000':
+        if host and host != 'ngixai-chat.onrender.com' and host != '127.0.0.1:10000' and host != 'localhost:10000':
             return 'forbidden', 403
         if zaponhour > 5999:
           servers = False
@@ -2467,7 +2467,7 @@ async def match():
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         # Смягчаем проверки для локальной разработки
-        if host and host != 'nai-chat.onrender.com':
+        if host and host != 'ngixai-chat.onrender.com':
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
@@ -2583,7 +2583,7 @@ async def profi():
         if ipy == 2:
           return 'К сожалению, мы заподозрили неладное. Ваш доступ к NAI запрещен до завтра.', 403
         # Смягчаем проверки для локальной разработки
-        if host and host != 'nai-chat.onrender.com':
+        if host and host != 'ngixai-chat.onrender.com':
             return 'forbidden', 403
         if 'python' in user_agent.lower() or 'curl' in user_agent.lower() or 'requests' in user_agent.lower():
             return '403', 403
