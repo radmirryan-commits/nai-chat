@@ -335,11 +335,11 @@ async def hedfkbnl():
 </head>
 <body>
     <div class="content">
-        <h1>Безопасность чата NAI</h1>
+        <h1>Безопасность чата nGix AI</h1>
         <p>Все ваши данные не передаются 3м лицам, а история диалога удаляется. Мы не просим и не будет просить ваши пароли и почты.</p>
         
         <h2>Запросы - откуда у нас AI без монетизации?</h2>
-        <p>Мы используем Groq free tier, а у них очень щедрые лимиты. Зачем нам все это? - Для того, что бы вы пользовались мощными нейросетями бесплатно.</p>
+        <p>Мы используем Groq free tier (или же Cerebras free tier, в зависимости от нагрузки серверов), а у них очень щедрые лимиты. Зачем нам все это? - Для того, что бы вы пользовались мощными нейросетями бесплатно. Да и просто для нас как хобби проект.</p>
         
         <blockquote>
             Убедиться, что запросы идут к Groq, а не к левым серверам можно на GitHub https://github.com/radmirryan-commits/nai-chat/blob/main
@@ -358,7 +358,7 @@ async def hedfkbnl():
             <li>Мы вас просим ввести данные вашей карты? Нет.</li>
         </ul>
         
-        <p>Обратите <a href="#">внимание:</a> под названием ChatGPT скрывается GPT-OSS. Мы сократили название, так как оригинальное название будет длинное.</p>
+        <p>Обратите <a href="#">внимание:</a> иногда наши сервра не доступны. Это связанно с тем, что у нас нет денег для платных тарифов и это не совсем надежный сервис.</p>
         
         <hr>
     </div>
@@ -664,7 +664,7 @@ async def kejghjkler():
 
 <div class="glass-panel">
     <div class="header">
-        <h1>NAI - Full FREE AI.</h1>
+        <h1>nGix AI - Full FREE AI.</h1>
         <div class="sub">Документация наших моделей.</div>
     </div>
 
@@ -692,7 +692,7 @@ async def kejghjkler():
 
         <div class="glass-card">
             <div class="card-header">
-                <span class="model-name">ChatGPT 120B</span>
+                <span class="model-name">GPT-OSS 120B</span>
                 <span class="version">Perfect</span>
             </div>
             <div class="content">
@@ -711,7 +711,7 @@ async def kejghjkler():
         </div>
         <div class="glass-card">
             <div class="card-header">
-                <span class="model-name">ChatGPT 20B</span>
+                <span class="model-name">GPT-OSS 20B</span>
                 <span class="version">Perfect</span>
             </div>
             <div class="content">
@@ -1412,6 +1412,128 @@ async def gbREB():
       z-index: 2;
       background: transparent;
     }
+
+    .ad-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      pointer-events: none;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(2px);
+    }
+
+    .ad-overlay .ad-card {
+      pointer-events: auto;
+      background: rgba(18, 18, 28, 0.85);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(124, 119, 255, 0.4);
+      border-radius: 32px;
+      padding: 28px 32px 24px;
+      max-width: 400px;
+      width: 92%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      position: relative;
+      transition: all 0.3s ease;
+      animation: fadeSlide 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    }
+
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(20px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .ad-card .close-ad {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: none;
+      color: #aab0d0;
+      font-size: 20px;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .ad-card .close-ad:hover {
+      background: rgba(255, 70, 70, 0.2);
+      color: #ff9a9a;
+      transform: rotate(90deg);
+    }
+
+    .ad-card .ad-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ececf4;
+      margin-bottom: 12px;
+      letter-spacing: -0.2px;
+    }
+
+    .ad-card .ad-desc {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #b8bcdd;
+      margin-bottom: 18px;
+    }
+
+    .ad-card .ad-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .ad-card .ad-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 10px 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: white;
+      background: linear-gradient(135deg, #7c77ff, #5a55d9);
+      border: none;
+      letter-spacing: 0.3px;
+    }
+
+    .ad-card .ad-btn:hover {
+      transform: scale(0.96);
+      opacity: 0.9;
+    }
+
+    .ad-card .ad-btn-outline {
+      background: transparent;
+      border: 1px solid rgba(124, 119, 255, 0.5);
+      color: #cbc8ff;
+    }
+
+    .ad-card .ad-btn-outline:hover {
+      background: rgba(124, 119, 255, 0.15);
+    }
+
+    .ad-card .ad-footer {
+      font-size: 10px;
+      color: #6a6c8a;
+      text-align: center;
+      border-top: 1px solid rgba(124, 119, 255, 0.15);
+      padding-top: 14px;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -1438,9 +1560,9 @@ async def gbREB():
     </div>
 
     <div class="chat-static-footer">
-      <span>Мы не являемся мошенниками. </span>
-      <span>Больше о безопасности: https://nai-chat.onrender.com/safe</span>
-      <span> Наши модели: https://nai-chat.onrender.com/models</span>
+      <span>Для подтверждения безопасности использования сервиса: </span>
+      <span>Больше о безопасности: https://ngixai-chat.onrender.com/safe</span>
+      <span> Наши модели: https://ngixai-chat.onrender.com/models</span>
       <span> Открытый код: </span>
       <span>https://github.com/radmirryan-commits/nai-chat/blob/main</span>
     </div>
@@ -2211,9 +2333,41 @@ async def gbREB():
       }
     }
     
+    function showAdPopup() {
+      const overlay = document.createElement('div');
+      overlay.className = 'ad-overlay';
+      overlay.innerHTML = `
+        <div class="ad-card">
+          <button class="close-ad" id="closeAdBtn">✕</button>
+          <div class="ad-title">Так как мы остаемся бесплатными:</div>
+          <div class="ad-desc">
+            Реклама - Проект «Կужᥙᥱ ᥴ᧘ёᤋы» открыт. Те, кто нуждается в поддержке можете обращаться к нам. Требуются администраторы.
+          </div>
+          <div class="ad-actions">
+            <a href="https://t.me/tears20456vvn" target="_blank" class="ad-btn">Канал</a>
+            <a href="https://t.me/tears34_bot" target="_blank" class="ad-btn ad-btn-outline">Бот</a>
+          </div>
+          <div class="ad-footer">nGix AI не несет ответственность за ваши действия на чужих сайтах.</div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      
+      document.getElementById('closeAdBtn').addEventListener('click', () => {
+        overlay.remove();
+      });
+      
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+        }
+      });
+    }
+    
     renderNoMessagesLayout();
     updateModeButtonText();
     initProModelSelector();
+    
+    showAdPopup();
   })();
 </script>
 </body>
